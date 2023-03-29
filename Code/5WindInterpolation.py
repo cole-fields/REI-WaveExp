@@ -10,13 +10,14 @@ import os
 import arcpy
 from arcpy import env
 from arcpy.sa import *
+arcpy.env.overwriteOutput = True
+arcpy.CheckOutExtension("Spatial")
 
 # Set up environmental workspace
-workingDir = "C:\Users\obrienjoh\Documents\zostera-sdm-ESI\Data"
+workingDir = r"C:\Temp\era"
 arcpy.env.workspace = workingDir
 
 # Set up path to the output geodatabase
-
 folderName = "spline_era5"
 splinesavepath = os.path.join(workingDir, folderName)
 
@@ -24,34 +25,33 @@ splinesavepath = os.path.join(workingDir, folderName)
 if not os.path.isdir(splinesavepath):
     # A folder hasn't been created yet
     arcpy.AddMessage("Creating output folder in " + workingDir)
-    arcpy.CreateFileGDB_management(workingDir, folderName)
+    os.mkdir(os.path.join(workingDir, folderName))
+    # arcpy.CreateFileGDB_management(workingDir, folderName)
 
 arcpy.AddMessage("Output folder: " + splinesavepath)
 
 # Set local variables
-fieldList = arcpy.ListFields("Copernicus_era5_summary_wide", "*", "Double") # list of fields to interpolate
 inPntFeat = "Copernicus_era5_summary_wide.shp" # input point shapefile
-cellSize = 35.0 # value of output raster cell size (numeric) or existing raster template (string)
+fieldList = arcpy.ListFields(inPntFeat, "*", "Double") # list of fields to interpolate
+cellSize = 20.0 # value of output raster cell size (numeric) or existing raster template (string)
 splineType = "REGULARIZED" # spline method
 weight = 0.1 # parameter affecting rigidness of interpolated surface
 
-print "Listing field names, types, and lengths"
+print("Listing field names, types, and lengths")
 
 for field in fieldList:
-    print("{0} is a type of {1} with a length of {2}"
-          .format(field.name, field.type, field.length))
-
     try:
-        outsplinesave = splinesavepath + "\\\\" + field.name + "_" + "spline"
+        print("{0} is a type of {1} with a length of {2}".format(field.name, field.type, field.length))
+        outsplinesave = splinesavepath + "\\\\" + field.name + "_" + "spline" + '.tif'
         zfield = field.name
-
+        print(f"outsplinesave: {outsplinesave}")
+        print(f"zfield: {zfield}")
         # Run spline interpolation
-        print "interpolating wind data"
+        print("interpolating wind data")
         outSpline = Spline(inPntFeat, zfield, cellSize, splineType, weight)
         outSpline.save(outsplinesave)
-
     except:
         # If an error occured print the message to the screen
-        print arcpy.GetMessages()
+        print(arcpy.GetMessages())
 
-print "Script complete"
+print("Script complete")
