@@ -33,35 +33,35 @@ library(doParallel)
 library(foreach)
 library(ncdf4)
 library(ncdf4.helpers)
+library(dotenv)
 
 # Housekeeping ----
-
+load_dot_env(file='../.env')
 # Sys.setenv(tz = 'GMT') # if using Azure VM, will need to set the system time zone
 
-data_dir <- "Data" # directory within project folder to store downloaded data
+data_dir <- "../Data/bc" # directory within project folder to store downloaded data
 
-my_uid <- "12345" # your CDS store user ID
+my_uid <- Sys.getenv("CDS_UID") # your CDS store user ID
+my_key <- Sys.getenv("CDS_KEY") # your CDS store key
 
-my_key <- "1a-2b-3c-4d" # your CDS store key
-
-crs <- 26920 # (UTM20) # projected coordinate reference system  (integer EPSG code)
+crs <- 3005 # (BC Albers) # projected coordinate reference system  (integer EPSG code)
+options(dplyr.summarise.inform = FALSE)
 # crs <- 26921 # (UTM21)
 
 # Request and download wind data from CDS ----
 
 # Add login details to your local keyring
-
 wf_set_key(user = my_uid, # personal User ID for CDS
            key = my_key, # key provided by CDS
            service = "cds")
 
 # Provide query arguments for CDS data request
-
-years <- str_pad(2011:2020, 4) # year range
+years <- str_pad(2019:2020, 4) # year range
 months <- str_pad(1:12, 2, "left", 0) # Jan - Dec
 days <- str_pad(1:31,2,"left","0") # 31 days
 hours <- str_c(0:23,"00",sep=":")%>%str_pad(5,"left","0") # 24 hrs
-bbox <- "48/-67.5/42.5/-57.5" # bounding box for region of interest (N, W, S, E)
+bbox <- "55.8/-133.4/48.2/-122.5"
+# bbox <- "49.3/-125.7/48.5/-124.7" # bounding box for region of interest (N, W, S, E)
 
 # Loop through years, provide query as list, and download data
 
@@ -90,13 +90,13 @@ foreach (i =  1:length(years)) %dopar% {
              request = request,   
              transfer = TRUE,  
              path = data_dir,
-             verbose = FALSE)
+             verbose = TRUE)
 }
-  
+
 stopCluster(cl)
 
 # Summarize wind data ----
-
+# Open netCDF files listed in data dir.
 era5 <- list.files(path = data_dir, pattern = "^era5", full.names = T) %>% 
   map(., nc_open)
 
@@ -106,7 +106,7 @@ u10 <- map(era5, ~as.vector(ncvar_get(.x, 'u10')))
 v10 <- map(era5, ~as.vector(ncvar_get(.x, 'v10')))
 
 latitude <- map(era5, ~as.vector(ncvar_get(.x, 'latitude'))) 
-  
+
 longitude <- map(era5, ~as.vector(ncvar_get(.x, 'longitude')))
 
 latitude_long <-  map2(latitude, longitude, ~lapply(.x, function(x) rep(x, length(.y)))) %>% 
@@ -115,13 +115,13 @@ latitude_long <-  map2(latitude, longitude, ~lapply(.x, function(x) rep(x, lengt
 
 longitude_long <-  map2(longitude, latitude, ~rep(.x, length(.y))) %>% 
   map2(., time, ~rep(.x, length(.y)))
-  
+
 date_time <- pmap(list(time, latitude, longitude), ~lapply(..1, function(x) rep(x, (length(..2) * length(..3))))) %>%  
   map(., unlist) %>% 
   map(., ~as.POSIXct(.x * 3600, origin = "1900-01-01 00:00:00", tz = "UTC"))
-  
+
 wind_data <- pmap(list(longitude_long, latitude_long, date_time, u10, v10), 
-             ~data.frame(longitude = ..1, latitude = ..2, date_time = ..3, u10 =  ..4, v10 = ..5)) %>% 
+                  ~data.frame(longitude = ..1, latitude = ..2, date_time = ..3, u10 =  ..4, v10 = ..5)) %>% 
   rbindlist() %>% 
   mutate(wind_spd = sqrt((u10^2) + (v10^2)),
          wind_dir = (180 + ((180/pi)*atan2(u10, v10))) %% 360) %>% 
@@ -144,7 +144,7 @@ wind_data <- pmap(list(longitude_long, latitude_long, date_time, u10, v10),
       dplyr::select(direction) %>% 
       table() %>% 
       data.frame() %>%
-      rename(direction = ".") %>% 
+      # rename(direction = ".") %>% 
       mutate(freq_total = Freq/sum(Freq), 
              direction = as.numeric(as.character(direction)))})) %>%
   # average speed by direction
@@ -160,21 +160,24 @@ wind_data <- pmap(list(longitude_long, latitude_long, date_time, u10, v10),
       summarise(max_wind = mean(monthly_max)) %>% 
       mutate_if(is.factor, as.character) %>%
       mutate_if(is.character, as.numeric) %>%
-      mutate(max_wind = na_if(x = max_wind, y = 'NaN'),
+      mutate(max_wind = na_if(x = max_wind, y = NaN),
              max_wind = nafill(x = max_wind, fill = 0)) %>% 
       data.frame()})) %>% 
   # Join average wind speed and frequency into one table per station
   transmute(wind_dir_freq = map2(avg_wind, wind_dir_cbin, left_join)) %>%  
   st_as_sf(., coords = c('longitude','latitude'), crs = 4326) %>% # convert to sf spatial object
-  st_transform(crs) # project to UTM20
+  st_transform(crs) # project to BCAlbers
 
-# save to RDS object
-
-saveRDS(wind_data, 'Data/Copernicus_era5_dir_freq_summary.rds')
+# Add sequential ID to list of dataframes such that there will be 8 points w/same geometry (same ID).
+# and save to RDS object
+wind_data <- wind_data %>%
+  mutate(wind_dir_freq = map2(wind_dir_freq, 1:length(wind_dir_freq), ~ mutate(.x, id = .y)))
+saveRDS(wind_data, file.path(data_dir, 'Copernicus_era5_dir_freq_summary.rds'))
 
 # cast to wide format and write to shapefile
 
-wind_unnest <- unnest(wind_nest, cols = wind_dir_freq)
+wind_unnest <- unnest(wind_data, cols = wind_dir_freq)
+
 
 wind_wide <- dplyr::select(wind_unnest, -Freq) %>% 
   st_drop_geometry() %>% 
@@ -183,12 +186,16 @@ wind_wide <- dplyr::select(wind_unnest, -Freq) %>%
               id_cols = id,
               names_from = direction,
               values_from = c(mx_spd, freq)) %>% 
-  left_join(., dplyr::select(wind_nest, id)) %>% 
+  left_join(., dplyr::select(wind_unnest, id)) %>% 
   st_set_geometry(., value = .$geometry)
 
+# Remove duplicates.
+wind_wide <- wind_wide[!duplicated(wind_wide), ]
+
 st_write(wind_wide,
-         dsn = 'Data',
+         dsn = data_dir,
          layer = "Copernicus_era5_summary_wide",
          driver = 'ESRI Shapefile')
 
 # Move onto wind data interpolation: (4WindInterpolation.py)
+
