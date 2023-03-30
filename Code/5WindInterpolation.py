@@ -8,7 +8,6 @@
 import sys
 import os
 import arcpy
-from arcpy import env
 from arcpy.sa import *
 arcpy.env.overwriteOutput = True
 arcpy.CheckOutExtension("Spatial")
@@ -25,7 +24,7 @@ splinesavepath = os.path.join(workingDir, folderName)
 if not os.path.isdir(splinesavepath):
     # A folder hasn't been created yet
     arcpy.AddMessage("Creating output folder in " + workingDir)
-    os.mkdir(os.path.join(workingDir, folderName))
+    os.mkdir(splinesavepath)
     # arcpy.CreateFileGDB_management(workingDir, folderName)
 
 arcpy.AddMessage("Output folder: " + splinesavepath)
@@ -42,13 +41,11 @@ print("Listing field names, types, and lengths")
 for field in fieldList:
     try:
         print("{0} is a type of {1} with a length of {2}".format(field.name, field.type, field.length))
-        outsplinesave = splinesavepath + "\\\\" + field.name + "_" + "spline" + '.tif'
+        outsplinesave = os.path.join(splinesavepath, field.name + "_" + "spline" + '.tif')
         zfield = field.name
-        print(f"outsplinesave: {outsplinesave}")
-        print(f"zfield: {zfield}")
         # Run spline interpolation
         print("interpolating wind data")
-        outSpline = Spline(inPntFeat, zfield, cellSize, splineType, weight)
+        outSpline = Spline(os.path.join(workingDir, inPntFeat), zfield, cellSize, splineType, weight)
         outSpline.save(outsplinesave)
     except:
         # If an error occured print the message to the screen
