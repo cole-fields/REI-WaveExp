@@ -39,3 +39,4 @@ vignettes/*.pdf
 .Renviron
 .env
 Data/
+__pycache__/
