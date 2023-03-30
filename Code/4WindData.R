@@ -27,87 +27,25 @@ library(tidyr)
 library(data.table)
 library(stringr)
 library(sf)
-library(ecmwfr)
-library(keyring)
-library(doParallel)
-library(foreach)
 library(ncdf4)
 library(ncdf4.helpers)
-library(dotenv)
 
-# Housekeeping ----
-load_dot_env(file='../.env')
-# Sys.setenv(tz = 'GMT') # if using Azure VM, will need to set the system time zone
-
-data_dir <- "../Data/bc" # directory within project folder to store downloaded data
-
-my_uid <- Sys.getenv("CDS_UID") # your CDS store user ID
-my_key <- Sys.getenv("CDS_KEY") # your CDS store key
-
-crs <- 3005 # (BC Albers) # projected coordinate reference system  (integer EPSG code)
-options(dplyr.summarise.inform = FALSE)
-# crs <- 26921 # (UTM21)
-
-# Request and download wind data from CDS ----
-
-# Add login details to your local keyring
-wf_set_key(user = my_uid, # personal User ID for CDS
-           key = my_key, # key provided by CDS
-           service = "cds")
-
-# Provide query arguments for CDS data request
-years <- str_pad(2019:2020, 4) # year range
-months <- str_pad(1:12, 2, "left", 0) # Jan - Dec
-days <- str_pad(1:31,2,"left","0") # 31 days
-hours <- str_c(0:23,"00",sep=":")%>%str_pad(5,"left","0") # 24 hrs
-bbox <- "55.8/-133.4/48.2/-122.5"
-# bbox <- "49.3/-125.7/48.5/-124.7" # bounding box for region of interest (N, W, S, E)
-
-# Loop through years, provide query as list, and download data
-
-n_cores <- detectCores() - 1
-
-cl <- makePSOCKcluster(n_cores)
-clusterExport(cl, "wf_request")
-registerDoParallel(cl)
-
-foreach (i =  1:length(years)) %dopar% {
-  
-  request <- list(
-    product_type = "reanalysis",
-    format = "netcdf",
-    variable = c("10m_u_component_of_wind", "10m_v_component_of_wind"),
-    year = years[i],
-    month = months,
-    day = days,
-    time = hours,
-    area = bbox,
-    dataset_short_name = "reanalysis-era5-single-levels",
-    target = paste0("era5_", years[i], ".nc")
-  )
-  
-  wf_request(user = my_uid,
-             request = request,   
-             transfer = TRUE,  
-             path = data_dir,
-             verbose = TRUE)
-}
-
-stopCluster(cl)
+data_dir <- "C:/Temp/hrdps"
+# data_dir <- E:/HRDPS2.5/2019
 
 # Summarize wind data ----
 # Open netCDF files listed in data dir.
-era5 <- list.files(path = data_dir, pattern = "^era5", full.names = T) %>% 
+netcdfs <- list.files(path = data_dir, pattern = "*.nc", full.names = T) %>% 
   map(., nc_open)
 
-time <- map(era5, ~ncvar_get(.x, "time"))
+time <- map(netcdfs, ~ncvar_get(.x, "time_counter"))
 
-u10 <- map(era5, ~as.vector(ncvar_get(.x, 'u10')))
-v10 <- map(era5, ~as.vector(ncvar_get(.x, 'v10')))
+u <- map(netcdfs, ~as.vector(ncvar_get(.x, 'u_wind')))
+v <- map(netcdfs, ~as.vector(ncvar_get(.x, 'v_wind')))
 
-latitude <- map(era5, ~as.vector(ncvar_get(.x, 'latitude'))) 
+latitude <- map(netcdfs, ~as.vector(ncvar_get(.x, 'nav_lat'))) 
 
-longitude <- map(era5, ~as.vector(ncvar_get(.x, 'longitude')))
+longitude <- map(netcdfs, ~as.vector(ncvar_get(.x, 'nav_lon')))
 
 latitude_long <-  map2(latitude, longitude, ~lapply(.x, function(x) rep(x, length(.y)))) %>% 
   map(., unlist) %>% 
