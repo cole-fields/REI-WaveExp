@@ -9,11 +9,12 @@ import sys
 import os
 import arcpy
 from arcpy.sa import *
-arcpy.env.overwriteOutput = True
 arcpy.CheckOutExtension("Spatial")
+arcpy.env.overwriteOutput = True
+arcpy.env.nodata = -9999
 
 # Set up environmental workspace
-workingDir = r"C:\Temp\era"
+workingDir = r"D:\Projects\REI-WaveExp\Data\input\qcs"
 arcpy.env.workspace = workingDir
 
 # Set up path to the output geodatabase
@@ -35,6 +36,7 @@ fieldList = arcpy.ListFields(inPntFeat, "*", "Double") # list of fields to inter
 cellSize = 20.0 # value of output raster cell size (numeric) or existing raster template (string)
 splineType = "REGULARIZED" # spline method
 weight = 0.1 # parameter affecting rigidness of interpolated surface
+
 
 print("Listing field names, types, and lengths")
 
