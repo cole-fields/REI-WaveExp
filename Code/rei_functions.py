@@ -77,7 +77,15 @@ def add_variables(xr_dataset, direction_func):
                             xr_dataset.variables['u10'],
                             xr_dataset.variables['v10'],
                             dask='parallelized')
-    xr_dataset = xr_dataset.assign(direction=direction)                            
+    xr_dataset = xr_dataset.assign(wind_dir=direction)                            
+    return xr_dataset
+
+
+def add_binned_direction(xr_dataset):
+    """ Given an xarray dataset, add the frequency that wind blew from each direction. """
+    bins = np.array([0, 22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5, 361])
+    binned_wind = np.digitize(xr_dataset, bins, right=True)
+    xr_dataset = xr_dataset.assign(direction=binned_wind)                            
     return xr_dataset
 
 
