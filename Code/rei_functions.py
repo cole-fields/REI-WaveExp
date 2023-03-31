@@ -56,10 +56,6 @@ def get_filepaths(directory, extension):
     return [os.path.join(directory, file) for file in os.listdir(directory) if file.endswith(extension)]
 
 
-def wrap_digitize(data, bins):
-    return np.digitize(data, bins)
-
-
 def calc_direction(u, v):
     """ Calculate wind direction based on u and v wind components. 
         https://confluence.ecmwf.int/pages/viewpage.action?pageId=133262398
@@ -84,6 +80,17 @@ def add_variables(xr_dataset, direction_func):
                             dask='parallelized')
     xr_dataset = xr_dataset.assign(wind_dir=direction)                            
     return xr_dataset
+
+
+def quantile(xr_dataset):
+    return xr_dataset[xr_dataset.wind_speed < np.percentile(xr_dataset.wind_speed, 95)]
+
+
+def percentile(xr_dataset):
+    q = np.percentile(xr_dataset['wind_speed'], 95)
+    mask = xr_dataset['wind_speed'] <= q
+    # Array filled with NAs using mask.
+    filtered_data = xr_dataset.where(mask, drop=True)
 
 
 def add_binned_direction(xr_dataset):
