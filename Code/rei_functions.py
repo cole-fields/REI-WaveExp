@@ -4,6 +4,7 @@ import cdsapi
 import settings
 import logging
 import xarray as xr
+import numpy as np
 
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -18,7 +19,7 @@ def request_data(year):
     logging.info(f'Requesting data for {year} from Copernicus Climate Data Store.')
     year = str(year)
     nc_name = settings.CDS_REQUEST['vars_short'] + '_hourly_era5_' + year + '.nc'
-    output_file  = os.path.join(settings.OUTPUT_DIR, nc_name)
+    output_file = os.path.join(settings.OUTPUT_DIR, nc_name)
     cds_client = cdsapi.Client()
     cds_client.retrieve(settings.CDS_REQUEST['short_name'],
                         {
@@ -30,7 +31,7 @@ def request_data(year):
                             'format': settings.CDS_REQUEST['format'],
                             'product_type': settings.CDS_REQUEST['product_type'],
                             'area': settings.CDS_REQUEST['bbox']
-                        }, output_file)
+    }, output_file)
     if os.path.isfile(output_file):
         logging.info(f'Download for {year} complete.')
         return output_file
@@ -48,9 +49,42 @@ def setup_dirs(path_list):
         logging.info(f'{d} already exists.')
 
 
-def get_nc(directory, extension):
-    """ Return list of files in DIRECTORY with matching EXTENSION. """
+def get_filepaths(directory, extension):
+    """ Return list of file paths in DIRECTORY with matching EXTENSION. """
+    logging.info(f'Getting list of file paths in {directory} matching extension: {extension}')
     return [os.path.join(directory, file) for file in os.listdir(directory) if file.endswith(extension)]
+
+
+def calc_direction(u, v):
+    """ Calculate wind direction based on u and v wind components. 
+        https://confluence.ecmwf.int/pages/viewpage.action?pageId=133262398
+    """
+    return 180+(180/np.pi)*np.arctan2(u, v)
+
+
+def add_variables(xr_dataset, direction_func):
+    """ Given an xarray dataset, add wind_speed and direction variables
+        derived from u v wind components
+    """
+    logging.info(f'Deriving wind speed and adding as variable to dataset...')
+    speed = xr.apply_ufunc(np.sqrt,
+                              xr_dataset.variables['u10']**2 +
+                              xr_dataset.variables['v10']**2,
+                              dask='parallelized')
+    xr_dataset = xr_dataset.assign(wind_speed=speed)
+    logging.info(f'Deriving wind direction and adding as variable to dataset...')
+    direction = xr.apply_ufunc(direction_func,
+                            xr_dataset.variables['u10'],
+                            xr_dataset.variables['v10'],
+                            dask='parallelized')
+    xr_dataset = xr_dataset.assign(direction=direction)                            
+    return xr_dataset
+
+
+def load_data(file_path_list):
+    """ Load any number of NetCDF files from FILE_PATH_LIST into a single Dataset. """
+    logging.info(f'Loading input NetCDF files: {file_path_list} into Dataset object.')
+    return xr.open_mfdataset(file_path_list)
 
 
 def process(inargs):
@@ -59,5 +93,4 @@ def process(inargs):
     if inargs.download:
         netcdf_paths = [request_data(year) for year in settings.CDS_REQUEST['years']]
     else:
-        netcdf_paths = get_nc(settings.OUTPUT_DIR, '.nc')
-
+        netcdf_paths = get_filepaths(settings.OUTPUT_DIR, '.nc')
