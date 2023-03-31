@@ -5,6 +5,7 @@ import settings
 import logging
 import xarray as xr
 import numpy as np
+import dask.array as da
 
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -55,6 +56,10 @@ def get_filepaths(directory, extension):
     return [os.path.join(directory, file) for file in os.listdir(directory) if file.endswith(extension)]
 
 
+def wrap_digitize(data, bins):
+    return np.digitize(data, bins)
+
+
 def calc_direction(u, v):
     """ Calculate wind direction based on u and v wind components. 
         https://confluence.ecmwf.int/pages/viewpage.action?pageId=133262398
@@ -82,10 +87,17 @@ def add_variables(xr_dataset, direction_func):
 
 
 def add_binned_direction(xr_dataset):
-    """ Given an xarray dataset, add the frequency that wind blew from each direction. """
+    """ Given an xarray dataset, add the frequency that wind blew from each direction. 
+         Bins define the direction cutoff points. The labels are the binned direction labels for
+         each category. When creating binned_wind_labelled, offset by -1 because values in
+         binned_wind are 1-9 inclusive and indices in labels are zero-indexed.
+    """
     bins = np.array([0, 22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5, 361])
-    binned_wind = np.digitize(xr_dataset, bins, right=True)
-    xr_dataset = xr_dataset.assign(direction=binned_wind)                            
+    labels = np.array([360, 45, 90, 135, 180, 225, 270, 315, 360])
+    binned_wind = xr.apply_ufunc(da.digitize, xr_dataset.variables['wind_dir'], bins, dask='allowed', kwargs={'right': -1})
+    binned_wind_labelled = da.from_array(da.take(labels, binned_wind-1))
+    binned_wind.values = binned_wind_labelled
+    xr_dataset = xr_dataset.assign(direction=binned_wind)
     return xr_dataset
 
 
