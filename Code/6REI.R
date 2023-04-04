@@ -8,8 +8,7 @@ library(dplyr)
 library(purrr)
 library(tidyr)
 library(sf)
-library(raster)
-library(rgis)
+library(terra)
 
 # Housekeeping ----
 
@@ -18,32 +17,35 @@ library(rgis)
 rasterOptions(chunksize = 1e+05, maxmemory = 1e+09)
 
 # Read in interpolated wind data ----
+pwd = getwd()
+data_dir <- file.path(dirname(pwd), 'Data/input/barkeley')
+tif_dir <- file.path(data_dir, 'spline_era5')
 
 # Raster stack of wind frequency by direction
-
-wind_freq <- list.files(path = "Data/spline_era5/",
+wind_freq <- list.files(path = tif_dir,
                    pattern = "^freq.+tif$",
                    full.names = T) %>% 
-  stack(.) 
+  rast(.) 
 
 # Raster stack of average daily maximum wind speed by direction
 
-wind_spd <- list.files(path = "Data/spline_era5/",
+wind_spd <- list.files(path = tif_dir,
                   pattern = "^mx.+tif$",
                   full.names = T) %>% 
-  stack(.) 
+  rast(.)
 
 # Combine fetch data and wind data ----
 
 # Read in effective fetch data
-
-Fetch_eff <- readRDS("Data/fetch_effective.rds")
+fetch <- terra::vect(file.path(data_dir, 'fetch_barkeley.shp'))
 
 # Extract frequency and speed values for fetch locations
 
-wind_combine <- fast_extract(ras = wind_freq, 
-                                   sf = Fetch_eff) %>% 
-  fast_extract(ras = wind_spd, sf = .)
+freq_values <- terra::extract(x = wind_freq, 
+                              y = fetch)
+spd_values <- terra::extract(x = wind_spd, 
+                             y = fetch)
+wind_combine <- merge(freq_values, spd_values, by="ID")
 
 # Calculate Relative Exposure Index ----
 
