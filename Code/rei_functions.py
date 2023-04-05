@@ -90,7 +90,8 @@ def percentile(xr_dataset):
     q = np.percentile(xr_dataset['wind_speed'], 95)
     mask = xr_dataset['wind_speed'] <= q
     # Array filled with NAs using mask.
-    filtered_data = xr_dataset.where(mask, drop=True)
+    filtered_data = xr_dataset.where(mask)
+    filtered_data2 = filtered_data.dropna('time')
 
 
 def add_binned_direction(xr_dataset):
@@ -121,3 +122,6 @@ def process(inargs):
         netcdf_paths = [request_data(year) for year in settings.CDS_REQUEST['years']]
     else:
         netcdf_paths = get_filepaths(settings.OUTPUT_DIR, '.nc')
+    ds = load_data(netcdf_paths)
+    ds2 = add_variables(ds, calc_direction)
+    ds3 = add_binned_direction(ds2)

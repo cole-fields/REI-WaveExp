@@ -14,7 +14,7 @@ arcpy.env.overwriteOutput = True
 arcpy.env.nodata = -9999
 
 # Set up environmental workspace
-workingDir = r"D:\Projects\REI-WaveExp\Data\input\qcs"
+workingDir = r"D:\projects\REI-WaveExp\Data\input\barkeley"
 arcpy.env.workspace = workingDir
 
 # Set up path to the output geodatabase
