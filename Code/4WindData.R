@@ -90,16 +90,10 @@ longitude_vals <- load_subset(era5, 'nav_lon', target_indices)
 latitude_long <- map2(latitude_vals, longitude_vals, ~lapply(.x, function(x) rep(x, length(.y))))
 longitude_long <- map2(longitude_vals, latitude_vals, ~lapply(.x, function(x) rep(x, length(.y))))
 
-# latitude_long <-  map2(latitude_vals, longitude_vals, ~lapply(.x, function(x) rep(x, length(.y)))) %>% 
-#   map(., unlist) %>% 
-#   map2(., time, ~rep(.x, length(.y)))
-# 
-# longitude_long <- map2(longitude, latitude, ~rep(.x, length(.y))) %>% 
-#   map2(., time, ~rep(.x, length(.y)))
 
-date_time <- pmap(list(time, latitude_vals, longitude_vals), ~lapply(..1, function(x) rep(x, (length(..2) * length(..3))))) %>%  
+date_time <- pmap(list(time, latitude_vals, longitude_vals), ~lapply(..1, function(x) rep(x, length(..2)))) %>%  
   map(., unlist) %>% 
-  map(., ~as.POSIXct(.x * 3600, origin = "1950-01-01 00:00:00", tz = "UTC"))
+  map(., ~as.POSIXct(.x, origin = "1950-01-01 00:00:00", tz = "UTC"))
 
 wind_data <- pmap(list(longitude_long, latitude_long, date_time, u10, v10), 
                   ~data.frame(longitude = ..1, latitude = ..2, date_time = ..3, u10 =  ..4, v10 = ..5)) %>% 
