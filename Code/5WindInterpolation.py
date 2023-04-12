@@ -14,7 +14,7 @@ arcpy.env.overwriteOutput = True
 arcpy.env.nodata = -9999
 
 # Set up environmental workspace
-workingDir = r"D:\projects\REI-WaveExp\Data\input\barkeley"
+workingDir = r"D:\projects\REI-WaveExp\Data\input\barkeley-gridded"
 arcpy.env.workspace = workingDir
 
 # Set up path to the output geodatabase

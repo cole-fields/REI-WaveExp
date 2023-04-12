@@ -30,6 +30,7 @@ library(ncdf4)
 library(ncdf4.helpers)
 
 # Housekeeping ----
+pwd <- getwd()
 data_dir <- "D:/projects/rei/data/wind/HRDPS_WindData" # directory within project folder to store downloaded data
 crs <- 3005 # projected coordinate reference system  (integer EPSG code)
 options(dplyr.summarise.inform = FALSE)
@@ -86,9 +87,14 @@ v10 <- load_subset(era5, 'v_wind', target_indices)
 
 latitude_vals <- load_subset(era5, 'nav_lat', target_indices)
 longitude_vals <- load_subset(era5, 'nav_lon', target_indices)
+longitude_vals <- lapply(longitude_vals, convert_lon)
 
-latitude_long <- map2(latitude_vals, longitude_vals, ~lapply(.x, function(x) rep(x, length(.y))))
-longitude_long <- map2(longitude_vals, latitude_vals, ~lapply(.x, function(x) rep(x, length(.y))))
+latitude_long <-  map2(latitude_vals, longitude_vals, ~lapply(.x, function(x) rep(x, length(.y)))) %>% 
+  map(., unlist) %>% 
+  map2(., time, ~rep(.x, length(.y)))
+
+longitude_long <-  map2(longitude_vals, latitude_vals, ~rep(.x, length(.y))) %>% 
+  map2(., time, ~rep(.x, length(.y)))
 
 
 date_time <- pmap(list(time, latitude_vals, longitude_vals), ~lapply(..1, function(x) rep(x, length(..2)))) %>%  

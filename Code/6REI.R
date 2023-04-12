@@ -14,7 +14,7 @@ library(terra)
 
 # Read in interpolated wind data ----
 pwd = getwd()
-data_dir <- file.path(dirname(pwd), 'Data/input/barkeley')
+data_dir <- file.path(dirname(pwd), 'Data/input/barkeley-gridded')
 tif_dir <- file.path(data_dir, 'spline_era5')
 
 # Raster stack of wind frequency by direction
