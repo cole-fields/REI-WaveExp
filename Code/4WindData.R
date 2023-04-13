@@ -20,7 +20,6 @@
 # need to be split into multiple queries
 
 # Load packages ----
-
 library(dplyr)
 library(purrr)
 library(tidyr)
@@ -30,33 +29,77 @@ library(sf)
 library(ncdf4)
 library(ncdf4.helpers)
 
-data_dir <- "C:/Temp/hrdps"
-# data_dir <- E:/HRDPS2.5/2019
+# Housekeeping ----
+pwd <- getwd()
+data_dir <- "D:/projects/rei/data/wind/HRDPS_WindData" # directory within project folder to store downloaded data
+crs <- 3005 # projected coordinate reference system  (integer EPSG code)
+options(dplyr.summarise.inform = FALSE)
+
+
+# Function that converts nav_lon values from 0-360 to -180-180.
+convert_lon <- function(x) {
+  x[which(x > 180)] <- x[which(x > 180)] - 360
+  return(x)
+}
+
+# Given 2 integer arrays (lat and lon values), and 2 2-element lists of lat or lon ranges,
+# return the common indices of values that are within the ranges specified.
+find_indices <- function(lon_array, lat_array, lon_range, lat_range) {
+  lon_indices <- which(lon_array <= lon_range[1] & lon_array >= lon_range[2])
+  lat_indices <- which(lat_array >= lat_range[1] & lat_array <= lat_range[2])
+  common_values <- intersect(lon_indices, lat_indices)
+  return(common_values)
+}
+
+# Function that loads subsets of data from variables in a NetCDF file based on target latitude and longitude indices.
+load_subset <- function(netcdf_list, variable, target_indices) {
+  my_var <- map(netcdf_list, ~as.vector(ncvar_get(.x, variable)))
+  my_var_subset <- map(my_var, ~.[target_indices])
+  return(my_var_subset)
+}
 
 # Summarize wind data ----
 # Open netCDF files listed in data dir.
-netcdfs <- list.files(path = data_dir, pattern = "*.nc", full.names = T) %>% 
-  map(., nc_open)
+era5 <- list.files(path = data_dir, pattern = "^HRDPS_OPPwest", full.names = T) %>% 
+  map(., nc_open, readunlim=FALSE)
 
-time <- map(netcdfs, ~ncvar_get(.x, "time_counter"))
+time <- map(era5, ~ncvar_get(.x, "time_counter"))
 
-u <- map(netcdfs, ~as.vector(ncvar_get(.x, 'u_wind')))
-v <- map(netcdfs, ~as.vector(ncvar_get(.x, 'v_wind')))
+# Read lat lon values from first netCDF file. 
+# We need to convert longitude from 0 to 360 into +-180.
+# They will then be used as a filter (by indices) once subset.
+latitude <- as.vector(ncvar_get(era5[[1]], 'nav_lat'))
+longitude <- as.vector(ncvar_get(era5[[1]], 'nav_lon'))
 
-latitude <- map(netcdfs, ~as.vector(ncvar_get(.x, 'nav_lat'))) 
+# Use map() to apply the convert_lon function to each nav_lon element in my_list
+longitude180 <- convert_lon(longitude)
 
-longitude <- map(netcdfs, ~as.vector(ncvar_get(.x, 'nav_lon')))
+# Define the subset of the data that you want to extract based on latitudes and longitudes
+subset_lat <- c(48.4, 49.4)
+subset_lon <- c(-124.6, -125.8)
 
-latitude_long <-  map2(latitude, longitude, ~lapply(.x, function(x) rep(x, length(.y)))) %>% 
+# Find the indices of the subset of data in the latitude and longitude arrays.
+target_indices <- find_indices(longitude180, latitude, subset_lon, subset_lat)
+
+# Load variables, then subset using indices.
+u10 <- load_subset(era5, 'u_wind', target_indices)
+v10 <- load_subset(era5, 'v_wind', target_indices)
+
+latitude_vals <- load_subset(era5, 'nav_lat', target_indices)
+longitude_vals <- load_subset(era5, 'nav_lon', target_indices)
+longitude_vals <- lapply(longitude_vals, convert_lon)
+
+latitude_long <-  map2(latitude_vals, longitude_vals, ~lapply(.x, function(x) rep(x, length(.y)))) %>% 
   map(., unlist) %>% 
   map2(., time, ~rep(.x, length(.y)))
 
-longitude_long <-  map2(longitude, latitude, ~rep(.x, length(.y))) %>% 
+longitude_long <-  map2(longitude_vals, latitude_vals, ~rep(.x, length(.y))) %>% 
   map2(., time, ~rep(.x, length(.y)))
 
-date_time <- pmap(list(time, latitude, longitude), ~lapply(..1, function(x) rep(x, (length(..2) * length(..3))))) %>%  
+
+date_time <- pmap(list(time, latitude_vals, longitude_vals), ~lapply(..1, function(x) rep(x, length(..2)))) %>%  
   map(., unlist) %>% 
-  map(., ~as.POSIXct(.x * 3600, origin = "1900-01-01 00:00:00", tz = "UTC"))
+  map(., ~as.POSIXct(.x, origin = "1950-01-01 00:00:00", tz = "UTC"))
 
 wind_data <- pmap(list(longitude_long, latitude_long, date_time, u10, v10), 
                   ~data.frame(longitude = ..1, latitude = ..2, date_time = ..3, u10 =  ..4, v10 = ..5)) %>% 

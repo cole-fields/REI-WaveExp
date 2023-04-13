@@ -33,23 +33,20 @@ library(data.table)
 library(sf)
 library(vroom)
 
-# Source functions ----
-
-source('Code/roll_recycle_fun.R')
-
 # Controls ----
 
 # relative contribution of fetch vectors surrounding each heading to calculation of effective fetch
-
 weights <- cos(c(45,33.75,22.5,11.25,0,11.25,22.5,33.75,45) *(pi/180))
 
 # Path to project directory (string)
+pwd = getwd()
+data_dir <- file.path(dirname(pwd), 'Data/input/barkeley')
 
-projDir <- "C:/REI"
+# Source functions ----
+source('roll_recycle_fun.R')
 
 # Coordinate reference system of fetch calculations (integer EPSG code)
-
-crs_fetch <- 26920 # (UTM20)
+crs_fetch <- 3005 # (BCAlbers)
 # crs_fetch <- 26921 # (UTM21)
 # crs_fetch <- 4326 # (WGS84)
 
@@ -57,9 +54,8 @@ crs_fetch <- 26920 # (UTM20)
 
 # list of fetch files
 
-fetch_csv <- list.files(path = projDir,
+fetch_csv <- list.files(path = data_dir,
                         pattern = 'csv',
-                        recursive = TRUE,
                         full.names = TRUE)
 
 # Combine csv files from separate clusters of points and reshape to long format
@@ -81,7 +77,7 @@ fetch_proxies <- fetch_summary[, .(min_fetch = min(fetch_length_m),
                                  sum_fetch = sum(fetch_length_m)),
                              by = .(site_names,X,Y)]
 
-vroom_write(fetch_proxies, "Data/fetch_proxies.csv", delim = ",")
+vroom_write(fetch_proxies, file.path(data_dir, "fetch_proxies.csv"), delim = ",")
 
 # Calculate effective fetch ----
 
@@ -96,4 +92,4 @@ fetch_eff <- fetch_summary %>%
          fetch_eff = map(fetch_eff, ~tibble(direction = c(360, seq(45, 315, 45)), fetch = .))) %>% 
   st_as_sf(coords = c("X","Y"), crs = crs_fetch)
 
-saveRDS(fetch_eff, "Data/fetch_effective.rds")
+saveRDS(fetch_eff, file.path(data_dir, "fetch_effective.rds"))
