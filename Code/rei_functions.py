@@ -11,7 +11,7 @@ import dask.array as da
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
-def request_data(year):
+def request_data(year, out_dir):
     """ Given an integer YEAR, make a request to the Climate Data Store - Copernicus.
         Parameters for the API request are pulled from settings. Data is downloaded to OUTPUT_DIR.
         Run sequential requests: https://github.com/ecmwf/cdsapi/issues/17#issuecomment-1447861102
@@ -20,7 +20,7 @@ def request_data(year):
     logging.info(f'Requesting data for {year} from Copernicus Climate Data Store.')
     year = str(year)
     nc_name = settings.CDS_REQUEST['vars_short'] + '_hourly_era5_' + year + '.nc'
-    output_file = os.path.join(settings.OUTPUT_DIR, nc_name)
+    output_file = os.path.join(out_dir, nc_name)
     cds_client = cdsapi.Client()
     cds_client.retrieve(settings.CDS_REQUEST['short_name'],
                         {
@@ -117,11 +117,12 @@ def load_data(file_path_list):
 
 def process(inargs):
     """ Call functions to perform various operations. """
-    setup_dirs([settings.DATA_DIR, settings.OUTPUT_DIR])
+    wind_dir = os.path.join(settings.DATA_DIR, inargs.wind)
+    setup_dirs([settings.DATA_DIR, wind_dir])
     if inargs.download:
-        netcdf_paths = [request_data(year) for year in settings.CDS_REQUEST['years']]
+        netcdf_paths = [request_data(year, wind_dir) for year in settings.CDS_REQUEST['years']]
     else:
-        netcdf_paths = get_filepaths(settings.OUTPUT_DIR, '.nc')
+        netcdf_paths = get_filepaths(wind_dir, '.nc')
     ds = load_data(netcdf_paths)
     ds2 = add_variables(ds, calc_direction)
     ds3 = add_binned_direction(ds2)
