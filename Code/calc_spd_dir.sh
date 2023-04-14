@@ -6,13 +6,33 @@
 # into annual files and retain only the wind-related components.
 # Some usefule cdo examples: https://code.mpimet.mpg.de/projects/cdo/wiki/Tutorial
 cdo mergetime -apply,selname,u_wind,v_wind [ 2015/*.nc ] merged/2015.nc
-cdo mergetime -apply,selname,u_wind,v_wind [ 2016/*.nc ] merged/2016.nc
-cdo mergetime -apply,selname,u_wind,v_wind [ 2017/*.nc ] merged/2017.nc
-cdo mergetime -apply,selname,u_wind,v_wind [ 2018/*.nc ] merged/2018.nc
-cdo mergetime -apply,selname,u_wind,v_wind [ 2019/*.nc ] merged/2019.nc
-cdo mergetime -apply,selname,u_wind,v_wind [ 2020/*.nc ] merged/2020.nc
-cdo mergetime -apply,selname,u_wind,v_wind [ 2021/*.nc ] merged/2021.nc
-cdo mergetime -apply,selname,u_wind,v_wind [ 2022/*.nc ] merged/2022.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2016/1/*.nc ] merged/2016_1.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2016/2/*.nc ] merged/2016_2.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2016/3/*.nc ] merged/2016_3.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ merged/2016*.nc ] merged/2016.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2017/1/*.nc ] merged/2017_1.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2017/2/*.nc ] merged/2017_2.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2017/3/*.nc ] merged/2017_3.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ merged/2017*.nc ] merged/2017.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2018/1/*.nc ] merged/2018_1.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2018/2/*.nc ] merged/2018_2.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2018/3/*.nc ] merged/2018_3.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ merged/2018*.nc ] merged/2018.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2019/1/*.nc ] merged/2019_1.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2019/2/*.nc ] merged/2019_2.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2019/3/*.nc ] merged/2019_3.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ merged/2019*.nc ] merged/2019.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2020/1/*.nc ] merged/2020_1.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2020/2/*.nc ] merged/2020_2.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2020/3/*.nc ] merged/2020_3.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ merged/2020*.nc ] merged/2020.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2021/1/*.nc ] merged/2021_1.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2021/2/*.nc ] merged/2021_2.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2021/3/*.nc ] merged/2021_3.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ merged/2021*.nc ] merged/2021.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2022/1/*.nc ] merged/2022_1.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ 2022/2/*.nc ] merged/2022_2.nc
+cdo mergetime -apply,selname,u_wind,v_wind [ merged/2022*.nc ] merged/2022.nc
 
 # Next, we want to calculate wind speed variable for each of the merged years.
 # This is explained here https://code.mpimet.mpg.de/boards/1/topics/12096.
