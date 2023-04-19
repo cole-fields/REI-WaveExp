@@ -109,6 +109,40 @@ def add_binned_direction(xr_dataset):
     return xr_dataset
 
 
+def get_bounding_box_str(se_coords, nw_coords):
+    """
+    Creates a string representing a bounding box given southeast and northwest coordinates.
+
+    Arguments:
+        - se_coords (tuple): A tuple of x, y representing southeast coordinates.
+        - nw_coords (tuple): A tuple of x, y representing northwest coordinates.
+
+    Returns:
+        A string in the format 'lon1,lon2,lat1,lat2', where lon1 is the westernmost longitude,
+        lon2 is the easternmost longitude, lat1 is the southernmost latitude, and lat2 is the
+        northernmost latitude.
+
+    Note:
+        The function will account for the y values being on a +-180 scale and will convert them
+        into a 0 to 360 scale.
+    """
+    lon1 = se_coords[0]
+    lon2 = nw_coords[0]
+    lat1 = se_coords[1]
+    lat2 = nw_coords[1]
+    
+    if lon1 < 0:
+        lon1 += 360
+    if lon2 < 0:
+        lon2 += 360
+        
+    if lon1 > lon2:
+        lon1, lon2 = lon2, lon1
+        lat1, lat2 = lat2, lat1
+        
+    return f"{lon1},{lon2},{lat1},{lat2}"
+
+
 def load_data(file_path_list):
     """ Load any number of NetCDF files from FILE_PATH_LIST into a single Dataset. """
     logging.info(f'Loading input NetCDF files: {file_path_list} into Dataset object.')
