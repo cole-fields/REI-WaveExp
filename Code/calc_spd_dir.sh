@@ -69,3 +69,24 @@ cdo -O -merge merged/2022_ws.nc merged/2022_wd.nc merged/HRDPS_OPPwest_ps2.5km_y
 rm merged/*_ws.nc
 rm merged/*_wd.nc
 
+# Subset by geographic location.
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2015.nc barkley/HRDPS_OPPwest_ps2.5km_y2015.nc
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2016.nc barkley/HRDPS_OPPwest_ps2.5km_y2016.nc
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2017.nc barkley/HRDPS_OPPwest_ps2.5km_y2017.nc
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2018.nc barkley/HRDPS_OPPwest_ps2.5km_y2018.nc
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2019.nc barkley/HRDPS_OPPwest_ps2.5km_y2019.nc
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2020.nc barkley/HRDPS_OPPwest_ps2.5km_y2020.nc
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2021.nc barkley/HRDPS_OPPwest_ps2.5km_y2021.nc
+cdo sellonlatbox,234.296747,235.31807,48.598047,49.248361 merged/HRDPS_OPPwest_ps2.5km_y2022.nc barkley/HRDPS_OPPwest_ps2.5km_y2022.nc
+
+# Merge? Yes merge and then bin the directions.
+cdo mergetime [ barkley/*.nc ] barkley/HRDPS_OPPwest_ps2.5km.nc
+
+# Create binned directions.
+cdo expr,'wind_dir_binned=360*(wind_dir>=-22.5)*(wind_dir<22.5)+45*(wind_dir>=22.5)*(wind_dir<67.5)+90*(wind_dir>=67.5)*(wind_dir<112.5)+135*(wind_dir>=112.5)*(wind_dir<157.5)+180*((wind_dir>=157.5)+(wind_dir<=-157.5))+225*(wind_dir>-157.5)*(wind_dir<=-112.5)+270*(wind_dir>-112.5)*(wind_dir<=-67.5)+315*(wind_dir>-67.5)*(wind_dir<=-22.5)' barkley/HRDPS_OPPwest_ps2.5km.nc barkley/HRDPS_OPPwest_ps2.5km_binned.nc
+
+# Create frequency variable?
+
+# Create percentile variable. First create the files required for timpctl operator: cdo --help timpctl
+cdo timmin barkley/HRDPS_OPPwest_ps2.5km.nc barkley/HRDPS_OPPwest_ps2.5km_timmin.nc
+cdo timpctl,95 -selvar,wind_spd barkley/HRDPS_OPPwest_ps2.5km.nc -selvar,wind_spd barkley/HRDPS_OPPwest_ps2.5km_timmin.nc -selvar,wind_spd barkley/HRDPS_OPPwest_ps2.5km_timmax.nc barkley/HRDPS_OPPwest_ps2.5km_q95.nc
