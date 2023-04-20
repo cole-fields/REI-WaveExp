@@ -42,12 +42,14 @@ def request_data(year, out_dir):
 
 def setup_dirs(path_list):
     """ Given a list of filepaths, create output directories as needed. """
-    logging.info('Setting up output directories.')
+    logging.info('Setting up directories.')
     for d in path_list:
-        if not os.path.exists(d):
-            logging.info(f'Creating directory: {d}')
-            os.mkdir(d)
-        logging.info(f'{d} already exists.')
+        if d:
+            if not os.path.exists(d):
+                logging.info(f'Creating directory: {d}')
+                os.mkdir(d)
+            else:
+                logging.info(f'{d} already exists.')
 
 
 def get_filepaths(directory, extension):
@@ -111,18 +113,20 @@ def add_binned_direction(xr_dataset):
 
 def load_data(file_path_list):
     """ Load any number of NetCDF files from FILE_PATH_LIST into a single Dataset. """
-    logging.info(f'Loading input NetCDF files: {file_path_list} into Dataset object.')
-    return xr.open_mfdataset(file_path_list)
+    try:
+        logging.info(f'Loading input NetCDF files: {file_path_list} into Dataset object.')
+        return xr.open_mfdataset(file_path_list, decode_times=False)
+    except ValueError as e:
+        logging.error(f'Error loading all netcdf files: {e}')
 
 
 def process(inargs):
     """ Call functions to perform various operations. """
-    wind_dir = os.path.join(settings.DATA_DIR, inargs.wind)
-    setup_dirs([settings.DATA_DIR, wind_dir])
+    setup_dirs([settings.DATA_DIR, inargs.source])
     if inargs.download:
-        netcdf_paths = [request_data(year, wind_dir) for year in settings.CDS_REQUEST['years']]
+        netcdf_paths = [request_data(year, inargs.source) for year in settings.CDS_REQUEST['years']]
     else:
-        netcdf_paths = get_filepaths(wind_dir, '.nc')
-    ds = load_data(netcdf_paths)
-    ds2 = add_variables(ds, calc_direction)
-    ds3 = add_binned_direction(ds2)
+        netcdf_paths = get_filepaths(inargs.source, '.nc')
+    # ds = load_data(netcdf_paths)
+    # ds2 = add_variables(ds, calc_direction)
+    # ds3 = add_binned_direction(ds2)

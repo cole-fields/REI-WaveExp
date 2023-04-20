@@ -4,12 +4,11 @@
 import os
 
 # Argument example.
-ARG_EX = 'usage: rei.py [-h] [-w {era5,hrdps}] [-d]'
+ARG_EX = 'usage: rei.py [-h] [-w {era5,hrdps}] [-d] [-s SOURCE]'
 
 # Directories.
 PWD = os.getcwd()
-DATA_DIR = os.path.join(os.path.dirname(PWD), 'Data')
-WIND_DATA = os.path.join(DATA_DIR, 'wind')
+DATA_DIR = os.path.join(os.path.dirname(PWD), 'data')
 
 # Global vars and Dictionaries.
 SPATIAL_REF_SYS = 3005
