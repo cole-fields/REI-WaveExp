@@ -38,5 +38,11 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 .env
-Data/
-__pycache__/
+Code/bin.sh
+Code/calc_bin_mask.sh
+Code/calc_spd_dir.sh
+Code/daily_max.sh
+Code/grandmean.sh
+Code/grandmean_merge.sh
+Code/monthly_mean.sh
+Code/subset.sh
