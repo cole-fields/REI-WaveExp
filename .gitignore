@@ -46,3 +46,6 @@ Code/grandmean.sh
 Code/grandmean_merge.sh
 Code/monthly_mean.sh
 Code/subset.sh
+
+Data
+Code/__pycache__/

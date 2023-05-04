@@ -35,7 +35,7 @@ def process(inargs):
     lyr_ref = f'{geopackage}/{layer_name}'
     # Use ListFields to get a list of all the fields in the layer
     fields = arcpy.ListFields(lyr_ref)
-    interp_fields = [f.name for f in fields if 'mx_spd' in f.name or 'freq' in f.name]
+    interp_fields = [f for f in fields if 'mx_spd' in f.name or 'freq' in f.name]
     # Loop through the fields and print their names
     for field in interp_fields:
         print(field.name)
