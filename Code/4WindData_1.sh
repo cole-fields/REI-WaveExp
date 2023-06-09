@@ -162,4 +162,3 @@ rm $1/binned/360_tmp.nc $1/binned/grandmean_360.nc
 
 # 16. Merge all grand mean direction files
 cdo merge [ $1/binned/grandmean_*.nc ] $1/HRDPS_OPPwest_ps2.5km_grandmean.nc
-

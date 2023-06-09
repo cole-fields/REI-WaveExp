@@ -19,7 +19,7 @@ frequency (freq) of winds that occurred in within the direction bin. The total o
 for each location should equal 1.
 
 The dataframe example above is then converted into a wide format and written to disk 
-as a spatial object. Wide format dataframe sample:
+as a spatial object. Wide format dataframe sample:settings.
 
                 lat_dd      lon_dd  mx_spd_45  mx_spd_90  mx_spd_135  mx_spd_180  mx_spd_225  mx_spd_270  ...   freq_45   freq_90  freq_135  freq_180  freq_225  freq_270  freq_315  freq_360
 0     48.517288 -125.655457   9.791371  10.101445    9.358426    9.747580    9.630091    9.765584  ...  0.043672  0.098437  0.145371  0.138621  0.097670  0.141691  0.295608  0.038928
@@ -31,46 +31,65 @@ Note: the source data are on a 0-360 longitudinal grid and so we need to account
 import xarray as xr
 import geopandas as gpd
 import pyproj
+import os
+import argparse
 
-REGION = 'wcvi'
 
-# Load frequency and grand mean netcdf files as DataSets.
-fr = xr.open_dataset(r'HRDPS_OPPwest_ps2.5km_frequency.nc')
-gm = xr.open_dataset(r'HRDPS_OPPwest_ps2.5km_grandmean.nc')
+def process(data_directory, region):
+    subdir = os.path.join(data_directory, region)
+    # Load frequency and grand mean netcdf files as DataSets.
+    frequency = os.path.join(subdir, 'HRDPS_OPPwest_ps2.5km_frequency.nc')
+    grandmean = os.path.join(subdir, 'HRDPS_OPPwest_ps2.5km_grandmean.nc')
+    fr = xr.open_dataset(frequency)
+    gm = xr.open_dataset(grandmean)
 
-# Get arrays of max wind speed and direction (binned).
-gm_spd, gm_bin = gm['max_wind_spd'], gm['wind_dir_binned']
-# Convert both DataArrays to DataFrames (max_wind_spd and wind_dir_binned from grand mean).
-df_gm = gm_spd.to_dataframe(name='max_wind_spd')
-df_bin = gm_bin.to_dataframe(name='wind_dir_binned')
-df_gm['wind_dir_binned'] = df_bin['wind_dir_binned']
-# Convert DataArray of frequency of binned directions to DataFrame and rename.
-fr_total = fr['freq_total']
-df_freq = fr_total.to_dataframe()
-df_freq = df_freq.reset_index(level=['bin'])
-df_freq = df_freq.rename(columns={'bin': 'wind_dir_binned'})
+    # Get arrays of max wind speed and direction (binned).
+    gm_spd, gm_bin = gm['max_wind_spd'], gm['wind_dir_binned']
+    # Convert both DataArrays to DataFrames (max_wind_spd and wind_dir_binned from grand mean).
+    df_gm = gm_spd.to_dataframe(name='max_wind_spd')
+    df_bin = gm_bin.to_dataframe(name='wind_dir_binned')
+    df_gm['wind_dir_binned'] = df_bin['wind_dir_binned']
+    # Convert DataArray of frequency of binned directions to DataFrame and rename.
+    fr_total = fr['freq_total']
+    df_freq = fr_total.to_dataframe()
+    df_freq = df_freq.reset_index(level=['bin'])
+    df_freq = df_freq.rename(columns={'bin': 'wind_dir_binned'})
 
-# Merge frequency and grand mean dataframes. 
-merged_df = df_gm.merge(df_freq, on=['nav_lat', 'nav_lon', 'wind_dir_binned'])
-merged_df['lon_dd'] = merged_df['nav_lon']-360
-merged_df = merged_df.rename(columns={'nav_lat': 'lat_dd', 
-															'max_wind_spd': 'mx_spd',
-															'freq_total': 'freq',
-															'wind_dir_binned': 'direction'})
-merged_df = merged_df.drop(['nav_lon'], axis=1)
-merged_df = merged_df[['lat_dd', 'lon_dd', 'direction', 'mx_spd', 'freq']]
-# Save as csv file.
-merged_df.to_csv('freq_mxspd.csv', index=False)
+    # Merge frequency and grand mean dataframes. 
+    merged_df = df_gm.merge(df_freq, on=['nav_lat', 'nav_lon', 'wind_dir_binned'])
+    merged_df['lon_dd'] = merged_df['nav_lon']-360
+    merged_df = merged_df.rename(columns={'nav_lat': 'lat_dd', 
+                                                                'max_wind_spd': 'mx_spd',
+                                                                'freq_total': 'freq',
+                                                                'wind_dir_binned': 'direction'})
+    merged_df = merged_df.drop(['nav_lon'], axis=1)
+    merged_df = merged_df[['lat_dd', 'lon_dd', 'direction', 'mx_spd', 'freq']]
+    # Save as csv file.
+    outcsv = os.path.join(subdir, 'freq_mxspd.csv')
+    merged_df.to_csv(outcsv, index=False)
 
-# Pivot to wide format based on direction.
-df_wide = merged_df.pivot(index=['lat_dd', 'lon_dd'], columns='direction', values=['mx_spd', 'freq'])
-df_wide.columns = [f"{c[0]}_{int(c[1])}" if isinstance(c[1], float) else c[0] for c in df_wide.columns]
-# Reset index to make lat_dd and lon_dd regular columns.
-df_wide = df_wide.reset_index()
+    # Pivot to wide format based on direction.
+    df_wide = merged_df.pivot(index=['lat_dd', 'lon_dd'], columns='direction', values=['mx_spd', 'freq'])
+    df_wide.columns = [f'{c[0]}_{int(c[1])}' if isinstance(c[1], float) else c[0] for c in df_wide.columns]
+    # Reset index to make lat_dd and lon_dd regular columns.
+    df_wide = df_wide.reset_index()
 
-# Create a GeoDataFrame from your pandas DataFrame
-gdf = gpd.GeoDataFrame(df_wide, geometry=gpd.points_from_xy(df_wide.lon_dd, df_wide.lat_dd))
-# Assign the CRS using the EPSG code 4326 and reproject to BC Albers.
-gdf.crs = pyproj.CRS.from_epsg(4326)
-gdf_3005 = gdf.to_crs("EPSG:3005")
-gdf_3005.to_file("hrdps.gpkg", driver="GPKG", layer=REGION)
+    # Create a GeoDataFrame from your pandas DataFrame
+    gdf = gpd.GeoDataFrame(df_wide, geometry=gpd.points_from_xy(df_wide.lon_dd, df_wide.lat_dd))
+    # Assign the CRS using the EPSG code 4326 and reproject to BC Albers.
+    gdf.crs = pyproj.CRS.from_epsg(4326)
+    gdf_3005 = gdf.to_crs('EPSG:3005')
+    outgpkg = os.path.join(subdir, 'hrdps.gpkg')
+    gdf_3005.to_file(outgpkg, driver='GPKG', layer=region)
+
+
+def main(inargs):
+    # Process data.
+    process(inargs.path, inargs.region)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path', help='Path to netcdf data')
+    parser.add_argument('region', help='Name of region')
+    args = parser.parse_args()
+    main(args)

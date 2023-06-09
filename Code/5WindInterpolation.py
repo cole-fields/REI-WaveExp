@@ -31,7 +31,7 @@ def process(inargs):
     arcpy.AddMessage('Output folder: ' + splinesavepath)
     # Set local variables
     geopackage = 'hrdps.gpkg' # input point shapefile
-    layer_name = 'barkley'
+    layer_name = inargs.region
     lyr_ref = f'{geopackage}/{layer_name}'
     # Use ListFields to get a list of all the fields in the layer
     fields = arcpy.ListFields(lyr_ref)
@@ -63,6 +63,9 @@ def main():
     parser.add_argument('working_dir', 
                         type=str, 
                         help='Source data directory.')
+    parser.add_argument('region', 
+                    type=str, 
+                    help='Region name.')
     args = parser.parse_args()
     process(args)
 
