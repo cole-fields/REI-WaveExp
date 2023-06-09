@@ -42,14 +42,14 @@
 #    lon2  FLOAT    Eastern longitude
 #    lat1  FLOAT    Southern or northern latitude
 #    lat2  FLOAT    Northern or southern latitude
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2015.nc $1/HRDPS_OPPwest_ps2.5km_y2015.nc
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2016.nc $1/HRDPS_OPPwest_ps2.5km_y2016.nc
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2017.nc $1/HRDPS_OPPwest_ps2.5km_y2017.nc
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2018.nc $1/HRDPS_OPPwest_ps2.5km_y2018.nc
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2019.nc $1/HRDPS_OPPwest_ps2.5km_y2019.nc
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2020.nc $1/HRDPS_OPPwest_ps2.5km_y2020.nc
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2021.nc $1/HRDPS_OPPwest_ps2.5km_y2021.nc
-cdo sellonlatbox,234.179265,237.881042,48.18761,51.067458 merged/HRDPS_OPPwest_ps2.5km_y2022.nc $1/HRDPS_OPPwest_ps2.5km_y2022.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2015.nc $1/HRDPS_OPPwest_ps2.5km_y2015.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2016.nc $1/HRDPS_OPPwest_ps2.5km_y2016.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2017.nc $1/HRDPS_OPPwest_ps2.5km_y2017.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2018.nc $1/HRDPS_OPPwest_ps2.5km_y2018.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2019.nc $1/HRDPS_OPPwest_ps2.5km_y2019.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2020.nc $1/HRDPS_OPPwest_ps2.5km_y2020.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2021.nc $1/HRDPS_OPPwest_ps2.5km_y2021.nc
+cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2022.nc $1/HRDPS_OPPwest_ps2.5km_y2022.nc
 
 # 7. Merge all years.
 cdo mergetime [ $1/*.nc ] $1/HRDPS_OPPwest_ps2.5km.nc
