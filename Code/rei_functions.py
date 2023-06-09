@@ -178,13 +178,13 @@ def load_data(file_path_list):
         logging.error(f'Error loading all netcdf files: {e}')
 
 
-def process(inargs):
-    """ Call functions to perform various operations. """
-    setup_dirs([settings.DATA_DIR, inargs.source])
-    if inargs.download:
-        netcdf_paths = [request_data(year, inargs.source) for year in settings.CDS_REQUEST['years']]
-    else:
-        netcdf_paths = get_filepaths(inargs.source, '.nc')
+# def process(inargs):
+#     """ Call functions to perform various operations. """
+#     setup_dirs([settings.DATA_DIR, inargs.source])
+#     if inargs.download:
+#         netcdf_paths = [request_data(year, inargs.source) for year in settings.CDS_REQUEST['years']]
+#     else:
+#         netcdf_paths = get_filepaths(inargs.source, '.nc')
     # ds = load_data(netcdf_paths)
     # ds2 = add_variables(ds, calc_direction)
     # ds3 = add_binned_direction(ds2)
