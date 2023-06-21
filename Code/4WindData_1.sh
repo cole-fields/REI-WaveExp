@@ -3,6 +3,14 @@
 # 6. Subset data by geographic location.
 # Get the positions from D:\projects\sdm-framework\_Data\bounding_boxes.gdb polygon extents (LL, UR)
 # ----------
+# Barkley (note this is just from interpolated wind data done after the fact. not the poly extent.)
+# ----------
+# Upper Left  ( 1012715.598,  480733.400) (125d49'30.58"W, 49d20'34.08"N)
+# Lower Left  ( 1012715.598,  389093.400) (125d49'41.59"W, 48d31' 3.43"N)
+# Upper Right ( 1104655.598,  480733.400) (124d33'40.30"W, 49d20' 0.13"N)
+# Lower Right ( 1104655.598,  389093.400) (124d35'10.85"W, 48d30'30.03"N)
+# Center      ( 1058685.598,  434913.400) (125d12' 0.83"W, 48d55'39.00"N)
+# ----------
 # West Coast Vancouver Island
 # ----------
 # 761851.8870429138187319,341358.6138938328367658 : 1177962.7083740374073386,695430.8700691995909438
