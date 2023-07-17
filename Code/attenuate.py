@@ -62,7 +62,7 @@ def process(constant, depth, exposure, outdir):
     depth_attenuated_exposure = attenuate(exposure_masked, attenuation_factor, exposure_nodata)
     # Save the depth-attenuated exposure raster
     exposure_profile.update(count=1)
-    out_file = os.path.join(outdir, 'depth_attenuated_exposure.tif')
+    out_file = os.path.join(outdir, f'depth_attenuated_exposure_{constant}.tif')
     with rasterio.open(out_file, 'w', **exposure_profile) as dst:
         dst.write(depth_attenuated_exposure, 1)
 
