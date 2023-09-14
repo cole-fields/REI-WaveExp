@@ -4,7 +4,7 @@
 
 **Date:** 2023-09-13
 
-![Barkley Sound Relative Exposure Index](barkley.png)
+![Barkley Sound Relative Exposure Index](reference/barkley.png)
 
 ## Table of Contents
 - [1. Introduction](#1-introduction)
@@ -31,6 +31,7 @@ The project's primary goal is to generate five regional spatial layers that prov
 
 The project's main objectives remain unchanged:
 
+- Translate existing R code: https://github.com/obrienjm25/REI-WaveExp into CDO operations and python scripts.
 - Generate and deliver Relative Exposure Index geotiff raster files for five predefined regions for species distribution modelling.
 - Implement depth attenuation to account for the diminishing effect of wind-wave energy with greater depth.
 - Normalize output rasters on 0-1 scale and align with other predictor variables.
@@ -54,6 +55,19 @@ The project continues to follow the established methodology, including data coll
 
 Data from various sources, including the High Resolution Deterministic Prediction System (HRDPS) wind data and existing fetch data, have been collected and integrated into the analysis. Bathymetric data will be used to apply a exponential decay or other function.
 
+<iframe src="reference/mx_spd_bin_rose.html" width="600" height="400"></iframe>
+
+<iframe
+    width="640"
+    height="480"
+    src="https://youtu.be/ORtiZIZJf-M"
+    frameborder="0"
+    allow="autoplay; encrypted-media"
+    allowfullscreen
+>
+</iframe>
+
+
 ## 7. Tools and Technologies
 
 The project relies on the following tools and technologies:
@@ -61,46 +75,42 @@ The project relies on the following tools and technologies:
 - Geographic Information System (GIS) software for spatial analysis.
 - Python and R programming for data processing and analysis.
 - Climate Data Operators (CDO) software and shell scripts for specific data operation procedures.
-- Geospatial libraries and packages for Python (e.g., GeoPandas, xarray, and rasterio).
+- Geospatial libraries and packages for Python (e.g., ArcPy, GeoPandas, xarray, and rasterio).
 
 ## 8. Progress Update
 
-![Progress Chart](insert_progress_chart_url_here) <!-- You can add a progress chart or graph here -->
+![Progress Chart](reference/status.png)
 
 ### Key Achievements:
-- [Insert Achievement 1]
-- [Insert Achievement 2]
-- [Insert Achievement 3]
+- Translation of R code to CDO operations.
+- High Resolution wind data processed for all regions.
+- Initial REI layers created.
 
 ### Current Status:
-- Data collection and preprocessing are complete.
-- Spatial analysis for Relative Exposure Index is in progress.
-- Python scripts for analysis are being refined.
-- CDO software integration is underway.
+- Data collection and preprocessing are complete. Preprocessing includes getting tabular fetch data from spatial files and ensuring consistency in attributes between all regions.
+- Translation of R code into CDO software operations in shell scripts is complete.
+- Spatial analysis for Relative Exposure Index is in progress. This includes running the shell scripts with CDO operations for each of the five regions.
+- Python scripts for depth attenuation analysis are being refined. The remaining component testing and implementing a decay factor for depth attenuation of the REI products.
 - Initial geotiff raster files have been generated.
 
 ## 9. Challenges
 
-![Challenges Image](insert_challenges_image_url_here) <!-- You can add an image highlighting project challenges -->
+![Challenges Image](reference/hsig.png)
 
 ### Current Challenges:
-- [Insert Challenge 1]
-- [Insert Challenge 2]
-- [Insert Challenge 3]
+- Wave data: too many uncertainties about creating REI layer derived from modelled wave products. Different data sources, varying resolution, and most importantly an unknown process to calculate the REI. There are also data gaps to consider with modelled wave data. In contrast, using wind data follows an established methodology and a consistent source for all regions.
+- Depth attenuation formula: currently looking at exponential decay factor applied to REI.
+- Validating results: comparison to UVIC wave data showed greater agreement between original fetch and significant wave height because HSIG was greater further from coast which aligns with fetch sum calculations.
 
 ## 10. Next Steps
 
 ### Immediate Next Steps:
 - Complete spatial analysis and depth attenuation.
-- Finalize Python scripts for data processing.
-- Ensure accuracy of CDO software integration.
-- Generate geotiff raster files for all regions.
-- Begin documentation of the methodology and workflows.
+- Finalize Python, shell, and R scripts for data processing.
+- Update README.md file with all methods and data sources.
+- Generate geotiff raster files for all regions and normalize.
+- Package and publish on GIS Hub (align rasters, normalize, create metadata record).
 
 ## 11. Conclusion
 
-The project is progressing steadily toward its objectives, with key milestones achieved and challenges being addressed. The team remains committed to delivering high-quality geospatial data to support Fisheries and Oceans Canada in effective fisheries management.
-
-![Project Team](insert_team_photo_url_here) <!-- You can add a team photo for a personal touch -->
-
-For any inquiries or updates, please contact [Insert Project Manager's Name] at [Insert Contact Information].
+The project is progressing steadily toward its objectives, with key milestones achieved and challenges being addressed. 
