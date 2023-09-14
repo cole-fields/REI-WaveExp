@@ -55,18 +55,9 @@ The project continues to follow the established methodology, including data coll
 
 Data from various sources, including the High Resolution Deterministic Prediction System (HRDPS) wind data and existing fetch data, have been collected and integrated into the analysis. Bathymetric data will be used to apply a exponential decay or other function.
 
-<iframe src="reference/mx_spd_bin_rose.html" width="600" height="400"></iframe>
+[View Wind Rose for Max Speed (binned)](reference/mx_spd_bin_rose.html)
 
-<iframe
-    width="640"
-    height="480"
-    src="https://youtu.be/ORtiZIZJf-M"
-    frameborder="0"
-    allow="autoplay; encrypted-media"
-    allowfullscreen
->
-</iframe>
-
+[Watch Video](https://youtu.be/ORtiZIZJf-M)
 
 ## 7. Tools and Technologies
 
@@ -80,6 +71,16 @@ The project relies on the following tools and technologies:
 ## 8. Progress Update
 
 ![Progress Chart](reference/status.png)
+
+### Relative Exposure Index Layers
+![Salish Sea](reference/sog.png)
+
+![Queen Charlotte Strait](reference/qcs.png)
+
+![West Coast Vancouver Island](reference/wcvi.png)
+
+![North Central Coast and Haida Gwaii](reference/ncc_hg.png)
+
 
 ### Key Achievements:
 - Translation of R code to CDO operations.
