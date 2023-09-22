@@ -50,24 +50,24 @@
 #    lon2  FLOAT    Eastern longitude
 #    lat1  FLOAT    Southern or northern latitude
 #    lat2  FLOAT    Northern or southern latitude
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2015.nc $1/HRDPS_OPPwest_ps2.5km_y2015.nc
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2016.nc $1/HRDPS_OPPwest_ps2.5km_y2016.nc
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2017.nc $1/HRDPS_OPPwest_ps2.5km_y2017.nc
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2018.nc $1/HRDPS_OPPwest_ps2.5km_y2018.nc
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2019.nc $1/HRDPS_OPPwest_ps2.5km_y2019.nc
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2020.nc $1/HRDPS_OPPwest_ps2.5km_y2020.nc
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2021.nc $1/HRDPS_OPPwest_ps2.5km_y2021.nc
-cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2022.nc $1/HRDPS_OPPwest_ps2.5km_y2022.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2015.nc $1/HRDPS_OPPwest_ps2.5km_y2015.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2016.nc $1/HRDPS_OPPwest_ps2.5km_y2016.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2017.nc $1/HRDPS_OPPwest_ps2.5km_y2017.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2018.nc $1/HRDPS_OPPwest_ps2.5km_y2018.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2019.nc $1/HRDPS_OPPwest_ps2.5km_y2019.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2020.nc $1/HRDPS_OPPwest_ps2.5km_y2020.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2021.nc $1/HRDPS_OPPwest_ps2.5km_y2021.nc
+# cdo sellonlatbox,$2 merged/HRDPS_OPPwest_ps2.5km_y2022.nc $1/HRDPS_OPPwest_ps2.5km_y2022.nc
 
-# 7. Merge all years.
-cdo mergetime [ $1/*.nc ] $1/HRDPS_OPPwest_ps2.5km.nc
+# # 7. Merge all years.
+# cdo mergetime [ $1/*.nc ] $1/HRDPS_OPPwest_ps2.5km.nc
 
-# 8. Create binned direction.
-cdo expr,'wind_dir_binned=(wind_dir>=-22.5)*(wind_dir<22.5)*360+(wind_dir>=22.5)*(wind_dir<67.5)*45+(wind_dir>=67.5)*(wind_dir<112.5)*90+(wind_dir>=112.5)*(wind_dir<157.5)*135+((wind_dir>=157.5)+(wind_dir<=-157.5))*180+(wind_dir>-157.5)*(wind_dir<=-112.5)*225+(wind_dir>-112.5)*(wind_dir<=-67.5)*270+(wind_dir>-67.5)*(wind_dir<=-22.5)*315' $1/HRDPS_OPPwest_ps2.5km.nc $1/HRDPS_OPPwest_ps2.5km_binned360.nc
+# # 8. Create binned direction.
+# cdo expr,'wind_dir_binned=(wind_dir>=-22.5)*(wind_dir<22.5)*360+(wind_dir>=22.5)*(wind_dir<67.5)*45+(wind_dir>=67.5)*(wind_dir<112.5)*90+(wind_dir>=112.5)*(wind_dir<157.5)*135+((wind_dir>=157.5)+(wind_dir<=-157.5))*180+(wind_dir>-157.5)*(wind_dir<=-112.5)*225+(wind_dir>-112.5)*(wind_dir<=-67.5)*270+(wind_dir>-67.5)*(wind_dir<=-22.5)*315' $1/HRDPS_OPPwest_ps2.5km.nc $1/HRDPS_OPPwest_ps2.5km_binned360.nc
 
-# 9. Calculate min and max values required for percentile calculations.
-cdo timmin $1/HRDPS_OPPwest_ps2.5km.nc $1/HRDPS_OPPwest_ps2.5km_timmin.nc
-cdo timmax $1/HRDPS_OPPwest_ps2.5km.nc $1/HRDPS_OPPwest_ps2.5km_timmax.nc
+# # 9. Calculate min and max values required for percentile calculations.
+# cdo timmin $1/HRDPS_OPPwest_ps2.5km.nc $1/HRDPS_OPPwest_ps2.5km_timmin.nc
+# cdo timmax $1/HRDPS_OPPwest_ps2.5km.nc $1/HRDPS_OPPwest_ps2.5km_timmax.nc
 
 # 10. Calculate 95th percentile value for wind speed per point, over all time steps.
 cdo timpctl,95 -chname,wind_spd,q95 -selvar,wind_spd $1/HRDPS_OPPwest_ps2.5km.nc -selvar,wind_spd $1/HRDPS_OPPwest_ps2.5km_timmin.nc -selvar,wind_spd $1/HRDPS_OPPwest_ps2.5km_timmax.nc $1/HRDPS_OPPwest_ps2.5km_q95.nc
@@ -85,47 +85,65 @@ cdo histfreq,45,90,135,180,225,270,315,360,inf -chname,wind_dir_binned,freq_tota
 cdo merge $1/HRDPS_OPPwest_ps2.5km_merged.nc $1/HRDPS_OPPwest_ps2.5km_frequency.nc $1/HRDPS_OPPwest_ps2.5km_final.nc
 
 # 15. Calculate grand mean.
-# a) Subset data by wind_dir_binned value
-cdo -eqc,45. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_45.nc
-cdo -eqc,90. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_90.nc
-cdo -eqc,135. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_135.nc
-cdo -eqc,180. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_180.nc
-cdo -eqc,225. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_225.nc
-cdo -eqc,270. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_270.nc
-cdo -eqc,315. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_315.nc
-cdo -eqc,360. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_360.nc
+# a) Create mask layer with 1s and missing values (not zeros) for greater or equal to threshold for wind speed.
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd45.nc
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd90.nc
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd135.nc$2
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd180.nc
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd225.nc
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd270.nc
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd315.nc
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd360.nc
 
-# b) Assign NAs to data where the mask is 0
-cdo ifthen $1/binned/mask_45.nc $1/binned/mask_45.nc $1/binned/mask_45_with_nas.nc
-cdo ifthen $1/binned/mask_90.nc $1/binned/mask_90.nc $1/binned/mask_90_with_nas.nc
-cdo ifthen $1/binned/mask_135.nc $1/binned/mask_135.nc $1/binned/mask_135_with_nas.nc
-cdo ifthen $1/binned/mask_180.nc $1/binned/mask_180.nc $1/binned/mask_180_with_nas.nc
-cdo ifthen $1/binned/mask_225.nc $1/binned/mask_225.nc $1/binned/mask_225_with_nas.nc
-cdo ifthen $1/binned/mask_270.nc $1/binned/mask_270.nc $1/binned/mask_270_with_nas.nc
-cdo ifthen $1/binned/mask_315.nc $1/binned/mask_315.nc $1/binned/mask_315_with_nas.nc
-cdo ifthen $1/binned/mask_360.nc $1/binned/mask_360.nc $1/binned/mask_360_with_nas.nc
+# b) Create mask layer with 1s and missing values (not zeros) for binned wind direction.
+cdo -setctomiss,0 -eqc,45. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin45.nc
+cdo -setctomiss,0 -eqc,90. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin90.nc
+cdo -setctomiss,0 -eqc,135. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin135.nc
+cdo -setctomiss,0 -eqc,180. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin180.nc
+cdo -setctomiss,0 -eqc,225. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin225.nc
+cdo -setctomiss,0 -eqc,270. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin270.nc
+cdo -setctomiss,0 -eqc,315. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin315.nc
+cdo -setctomiss,0 -eqc,360. -selvar,wind_dir_binned $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_bin360.nc
 
-# c) Calculate daily max values for each binned direction
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_45_with_nas.nc $1/binned/max_wind_45.nc
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_90_with_nas.nc $1/binned/max_wind_90.nc
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_135_with_nas.nc $1/binned/max_wind_135.nc
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_180_with_nas.nc $1/binned/max_wind_180.nc
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_225_with_nas.nc $1/binned/max_wind_225.nc
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_270_with_nas.nc $1/binned/max_wind_270.nc
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_315_with_nas.nc $1/binned/max_wind_315.nc
-cdo -chname,wind_spd,max_wind_spd -selname,wind_spd -mul -daymax $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_360_with_nas.nc $1/binned/max_wind_360.nc
+# c) Multiply these together for a mask where both conditions must be met (>= threshold wind speed and the binned wind direction).
+cdo mul $1/binned/mask_bin45.nc $1/binned/mask_spd45.nc $1/binned/mask45.nc
+rm $1/binned/mask_spd45.nc $1/binned/mask_bin45.nc
+cdo mul $1/binned/mask_bin90.nc $1/binned/mask_spd90.nc $1/binned/mask90.nc
+rm $1/binned/mask_spd90.nc $1/binned/mask_bin90.nc
+cdo mul $1/binned/mask_bin135.nc $1/binned/mask_spd135.nc $1/binned/mask135.nc
+rm $1/binned/mask_spd135.nc $1/binned/mask_bin135.nc
+cdo mul $1/binned/mask_bin180.nc $1/binned/mask_spd180.nc $1/binned/mask180.nc
+rm $1/binned/mask_spd180.nc $1/binned/mask_bin180.nc
+cdo mul $1/binned/mask_bin225.nc $1/binned/mask_spd225.nc $1/binned/mask225.nc
+rm $1/binned/mask_spd225.nc $1/binned/mask_bin225.nc
+cdo mul $1/binned/mask_bin270.nc $1/binned/mask_spd270.nc $1/binned/mask270.nc
+rm $1/binned/mask_spd270.nc $1/binned/mask_bin270.nc
+cdo mul $1/binned/mask_bin315.nc $1/binned/mask_spd315.nc $1/binned/mask315.nc
+rm $1/binned/mask_spd315.nc $1/binned/mask_bin315.nc
+cdo mul $1/binned/mask_bin360.nc $1/binned/mask_spd360.nc $1/binned/mask360.nc
+rm $1/binned/mask_spd360.nc $1/binned/mask_bin360.nc
 
-# d) Calculate monthly mean of daily max values for each binned direction
-cdo -monmean $1/binned/max_wind_45.nc $1/binned/monmean_45.nc 
-cdo -monmean $1/binned/max_wind_90.nc $1/binned/monmean_90.nc 
-cdo -monmean $1/binned/max_wind_135.nc $1/binned/monmean_135.nc 
-cdo -monmean $1/binned/max_wind_180.nc $1/binned/monmean_180.nc 
-cdo -monmean $1/binned/max_wind_225.nc $1/binned/monmean_225.nc 
-cdo -monmean $1/binned/max_wind_270.nc $1/binned/monmean_270.nc 
-cdo -monmean $1/binned/max_wind_315.nc $1/binned/monmean_315.nc 
-cdo -monmean $1/binned/max_wind_360.nc $1/binned/monmean_360.nc
+# d) Now multiply mask by our data.
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask45.nc $1/binned/max_wind_45.nc
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask90.nc $1/binned/max_wind_90.nc
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask135.nc $1/binned/max_wind_135.nc
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask180.nc $1/binned/max_wind_180.nc
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask225.nc $1/binned/max_wind_225.nc
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask270.nc $1/binned/max_wind_270.nc
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask315.nc $1/binned/max_wind_315.nc
+cdo -chname,wind_spd,max_wind_spd -selname,wind_spd  -daymax -mul $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask360.nc $1/binned/max_wind_360.nc
 
-# e) Calculate grand mean (mean of monthly mean of daily max values) for each binned direction
+#e) Calculate monthly mean of daily maxes.
+cdo -monmean  $1/binned/max_wind_45.nc $1/binned/monmean_45.nc
+cdo -monmean  $1/binned/max_wind_90.nc $1/binned/monmean_90.nc 
+cdo -monmean  $1/binned/max_wind_135.nc $1/binned/monmean_135.nc 
+cdo -monmean  $1/binned/max_wind_180.nc $1/binned/monmean_180.nc 
+cdo -monmean  $1/binned/max_wind_225.nc $1/binned/monmean_225.nc
+cdo -monmean  $1/binned/max_wind_270.nc $1/binned/monmean_270.nc 
+cdo -monmean  $1/binned/max_wind_315.nc $1/binned/monmean_315.nc 
+cdo -monmean  $1/binned/max_wind_360.nc $1/binned/monmean_360.nc 
+
+# f) Calculate grand mean (mean of monthly mean of daily max values) for each binned direction.
 cdo timmean $1/binned/monmean_45.nc $1/binned/grandmean_45.nc
 cdo timmean $1/binned/monmean_90.nc $1/binned/grandmean_90.nc
 cdo timmean $1/binned/monmean_135.nc $1/binned/grandmean_135.nc
@@ -135,7 +153,7 @@ cdo timmean $1/binned/monmean_270.nc $1/binned/grandmean_270.nc
 cdo timmean $1/binned/monmean_315.nc $1/binned/grandmean_315.nc
 cdo timmean $1/binned/monmean_360.nc $1/binned/grandmean_360.nc
 
-# f) Add the wind_dir_binned constant value variable to each grand mean
+# g) Add the wind_dir_binned constant value variable to each grand mean
 cdo -expr,'wind_dir_binned=(max_wind_spd*0+45)' $1/binned/grandmean_45.nc $1/binned/45_tmp.nc
 cdo merge $1/binned/45_tmp.nc $1/binned/grandmean_45.nc $1/binned/grandmean_45_bin.nc
 rm $1/binned/45_tmp.nc $1/binned/grandmean_45.nc

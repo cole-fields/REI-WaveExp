@@ -53,3 +53,5 @@ maps/
 Code/.ipynb_checkpoints
 documents/
 
+code/plots.py
+code/vector_to_raster.py
