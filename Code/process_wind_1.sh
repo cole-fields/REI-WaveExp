@@ -88,7 +88,7 @@ cdo merge $1/HRDPS_OPPwest_ps2.5km_merged.nc $1/HRDPS_OPPwest_ps2.5km_frequency.
 # a) Create mask layer with 1s and missing values (not zeros) for greater or equal to threshold for wind speed.
 cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd45.nc
 cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd90.nc
-cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd135.nc$2
+cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd135.nc
 cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd180.nc
 cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd225.nc
 cdo -setctomiss,0 -eqc,1. -selvar,mask $1/HRDPS_OPPwest_ps2.5km_final.nc $1/binned/mask_spd270.nc
