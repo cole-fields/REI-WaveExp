@@ -57,27 +57,18 @@ def get_k_constant(rei_values):
     return (22**2)*((1/rei_values)**(2/3))*g**(1/3)
 
 
-# def attenuate(k, data_array, depth_masked, slope_masked, nodata):
-#     """ Return NumPy array that has the attenuation factor applied to its values and fill with NoData values. """
-#     attenuated =  (data_array * .5) * (np.exp(-k * depth_masked) * .3) * (slope_masked * .2)
-#     return attenuated.filled(nodata)
-
 def attenuate(data_array, attenuation_factors, slope_masked, nodata):
     """ Return NumPy array that has the attenuation factor applied to its values and fill with NoData values. """
     attenuated =  data_array * attenuation_factors * slope_masked
     return attenuated.filled(nodata)
 
-# def attenuate(attenuation_factors, data_array, slope_masked, nodata):
-#     """ Return NumPy array that has the attenuation factor applied to its values and fill with NoData values. """
-#     # attenuated =  data_array * attenuation_factors
-#     attenuated = (data_array * .5) * (attenuation_factors * .3) * (slope_masked * .2)
-#     return attenuated.filled(nodata)
 
-
-def process(depth, slope, exposure, outdir):
+def process(raster_dir, exposure, outdir):
     """ Call functions to process data for depth attenuation. """
     # Mask out NoData values in depth and exposure rasters
     # depth, exposure, outdir = r"D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg\bathymetry.tif", r"D:\projects\REI-WaveExp\data\hg\rei_20m_hg.tif", r"D:\projects\REI-WaveExp\data\hg"
+    depth = os.path.join(raster_dir, 'bathymetry.tif')
+    slope = os.path.join(raster_dir, 'slope.tif')
     depth_data, depth_nodata = load_layer(depth)
     slope_data, slope_nodata = load_layer(slope)
     exposure_data, exposure_nodata, exposure_profile = load_layer(exposure, rei=True)
@@ -104,15 +95,16 @@ def process(depth, slope, exposure, outdir):
 
 def main():
     """ Add arguments and process data. """
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg\bathymetry.tif D:\projects\REI-WaveExp\data\hg\rei_20m_hg.tif D:\projects\REI-WaveExp\data\hg
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi\bathymetry.tif D:\projects\REI-WaveExp\data\wcvi\rei_20m_wcvi.tif D:\projects\REI-WaveExp\data\wcvi
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg D:\projects\REI-WaveExp\data\hg\v1.1\rei_20m_hg.tif D:\projects\REI-WaveExp\data\hg\v1.1
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\QCS\envlayers-20m-qcs D:\projects\REI-WaveExp\data\qcs\v1.1\rei_20m_qcs.tif D:\projects\REI-WaveExp\data\qcs\v1.1
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi D:\projects\REI-WaveExp\data\wcvi\v1.1\rei_20m_wcvi.tif D:\projects\REI-WaveExp\data\wcvi\v1.1
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea D:\projects\REI-WaveExp\data\sog\v1.1\rei_20m_sog.tif D:\projects\REI-WaveExp\data\sog\v1.1
     parser = argparse.ArgumentParser(description='Apply exponential decay function to relative exposure index layer based in depth.')
-    parser.add_argument('depth', type=str, help='Absolute filepath to input depth raster.')
-    parser.add_argument('slope', type=str, help='Absolute filepath to input slope raster.')
+    parser.add_argument('raster_dir', type=str, help='Absolute filepath to data directory with depth and slope raster (named bathymetry.tif and slope.tif).')
     parser.add_argument('exposure', type=str, help='Absolute filepath to input exposure raster.')
     parser.add_argument('outdir', type=str, help='Output directory for depth-attenuated layer.')
     args = parser.parse_args()
-    process(args.depth, args.slope, args.exposure, args.outdir)
+    process(args.raster_dir, args.exposure, args.outdir)
 
 
 if __name__ == '__main__':
