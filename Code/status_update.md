@@ -103,6 +103,17 @@ The project relies on the following tools and technologies:
 
 ### Relative Exposure Index Layers
 #### Updates:
+* 2023-10-04: V1.1 (Regional wind rose plots)
+![Salish Sea](reference/sog-wind-rose.png)
+
+![Queen Charlotte Strait](reference/qcs-wind-rose.png)
+
+![West Coast Vancouver Island](reference/wcvi-wind-rose.png)
+
+![North Central Coast](reference/ncc-wind-rose.png)
+
+![Haida Gwaii](reference/hg-wind-rose.png)
+
 * 2023-10-04: V1.1 (Depth and slope attenuation)
 
 ![Salish Sea](reference/sog-att.png)
