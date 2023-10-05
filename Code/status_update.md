@@ -114,8 +114,19 @@ The project relies on the following tools and technologies:
 
 ![Haida Gwaii](reference/hg-wind-rose.png)
 
-* 2023-10-04: V1.1 (Depth and slope attenuation)
+* 2023-10-05: Interpolated data (max speed and frequency)
+![HG Speed](reference/speed-hg-multi.png)
 
+* V1.2 (Depth attenuation)
+![Salish Sea](reference/sog1.2.png)
+
+![Queen Charlotte Strait](reference/qcs1.2.png)
+
+![West Coast Vancouver Island](reference/wcvi1.2.png)
+
+![North Central Coast and Haida Gwaii](reference/ncc_hg1.2.png)
+
+* 2023-10-04: V1.1 (Depth and slope attenuation)
 ![Salish Sea](reference/sog-att.png)
 
 ![Queen Charlotte Strait](reference/qcs-att.png)
