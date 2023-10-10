@@ -6,7 +6,11 @@
 
 ~~**Date:** 2023-09-13~~
 
+Relative Exposure Index
 ![Barkley Sound Relative Exposure Index](reference/barkley.png)
+
+Depth and Slope Attenuated Relative Exposure Index
+![Barkley Sound Relative Exposure Index](reference/barkley-att.png)
 
 ## Table of Contents
 - [1. Introduction](#1-introduction)
@@ -114,8 +118,11 @@ The project relies on the following tools and technologies:
 
 ![Haida Gwaii](reference/hg-wind-rose.png)
 
-* 2023-10-05: Interpolated data (max speed and frequency)
+* 2023-10-05: Interpolated data (max speed)
 ![HG Speed](reference/speed-hg-multi.png)
+
+* 2023-10-05: Interpolated data (frequency)
+![HG Frequency](reference/frequency-hg-multi.png)
 
 * V1.2 (Depth attenuation)
 ![Salish Sea](reference/sog1.2.png)
