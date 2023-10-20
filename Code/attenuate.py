@@ -59,7 +59,7 @@ def get_k_constant(rei_values):
 
 def attenuate(data_array, attenuation_factors, slope_masked, nodata):
     """ Return NumPy array that has the attenuation factor applied to its values and fill with NoData values. """
-    attenuated =  data_array * attenuation_factors
+    attenuated =  data_array * attenuation_factors * slope_masked
     return attenuated.filled(nodata)
 
 
@@ -68,7 +68,7 @@ def process(raster_dir, region, version, exposure, outdir):
     # Mask out NoData values in depth and exposure rasters
     # depth, exposure, outdir = r"D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg\bathymetry.tif", r"D:\projects\REI-WaveExp\data\hg\rei_20m_hg.tif", r"D:\projects\REI-WaveExp\data\hg"
     depth = os.path.join(raster_dir, 'bathymetry.tif')
-    slope = os.path.join(raster_dir, 'slope.tif')
+    slope = os.path.join(raster_dir, 'slope_percent.tif')
     depth_data, depth_nodata = load_layer(depth)
     slope_data, slope_nodata = load_layer(slope)
     exposure_data, exposure_nodata, exposure_profile = load_layer(exposure, rei=True)
@@ -87,7 +87,6 @@ def process(raster_dir, region, version, exposure, outdir):
     depth_attenuated_exposure = attenuate(exposure_masked, attenuation_factors, slope_masked, exposure_nodata)
     # Save the depth-attenuated exposure raster
     exposure_profile.update(count=1)
-
     out_file = os.path.join(outdir, f'rei_{region}_{version}.tif')
     with rasterio.open(out_file, 'w', **exposure_profile) as dst:
         dst.write(depth_attenuated_exposure, 1)
@@ -95,11 +94,11 @@ def process(raster_dir, region, version, exposure, outdir):
 
 def main():
     """ Add arguments and process data. """
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg hg 2 D:\projects\REI-WaveExp\data\hg\v1.1\rei_20m_hg.tif D:\projects\REI-WaveExp\data\hg\v1.2
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\QCS\envlayers-20m-qcs qcs 2 D:\projects\REI-WaveExp\data\qcs\v1.1\rei_20m_qcs.tif D:\projects\REI-WaveExp\data\qcs\v1.2
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi wcvi 2 D:\projects\REI-WaveExp\data\wcvi\v1.1\rei_20m_wcvi.tif D:\projects\REI-WaveExp\data\wcvi\v1.2
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea sog 2 D:\projects\REI-WaveExp\data\sog\v1.1\rei_20m_sog.tif D:\projects\REI-WaveExp\data\sog\v1.2
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\NCC\envlayers-20m-ncc ncc 2 D:\projects\REI-WaveExp\data\ncc\v1.1\rei_20m_ncc.tif D:\projects\REI-WaveExp\data\ncc\v1.2
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg hg 3 D:\projects\REI-WaveExp\data\hg\v1.1\rei_20m_hg.tif D:\projects\REI-WaveExp\data\hg\v1.3
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\QCS\envlayers-20m-qcs qcs 3 D:\projects\REI-WaveExp\data\qcs\v1.1\rei_20m_qcs.tif D:\projects\REI-WaveExp\data\qcs\v1.3
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi wcvi 3 D:\projects\REI-WaveExp\data\wcvi\v1.1\rei_20m_wcvi.tif D:\projects\REI-WaveExp\data\wcvi\v1.3
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea sog 3 D:\projects\REI-WaveExp\data\sog\v1.1\rei_20m_sog.tif D:\projects\REI-WaveExp\data\sog\v1.3
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\NCC\envlayers-20m-ncc ncc 3 D:\projects\REI-WaveExp\data\ncc\v1.1\rei_20m_ncc.tif D:\projects\REI-WaveExp\data\ncc\v1.3
     parser = argparse.ArgumentParser(description='Apply exponential decay function to relative exposure index layer based in depth.')
     parser.add_argument('raster_dir', type=str, help='Absolute filepath to data directory with depth and slope raster (named bathymetry.tif and slope.tif).')
     parser.add_argument('region', type=str, choices=['sog', 'qcs', 'ncc', 'wcvi', 'hg'], help='Choose a region: sog, qcs, ncc, wcvi, hg')
