@@ -63,7 +63,7 @@ def attenuate(data_array, attenuation_factors, slope_masked, nodata):
     return attenuated.filled(nodata)
 
 
-def process(raster_dir, exposure, outdir):
+def process(raster_dir, region, version, exposure, outdir):
     """ Call functions to process data for depth attenuation. """
     # Mask out NoData values in depth and exposure rasters
     # depth, exposure, outdir = r"D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg\bathymetry.tif", r"D:\projects\REI-WaveExp\data\hg\rei_20m_hg.tif", r"D:\projects\REI-WaveExp\data\hg"
@@ -75,7 +75,7 @@ def process(raster_dir, exposure, outdir):
     depth_masked = mask_nodata(depth_data, depth_nodata)
     slope_masked = mask_nodata(slope_data, slope_nodata)
     land_mask = (depth_masked <= 0)
-    depth_masked[land_mask] = 0.0
+    depth_masked[land_mask] = 0.1
     zero_mask = (slope_masked == 0.0)
     slope_masked[zero_mask] = 0.1
     exposure_masked = mask_nodata(exposure_data, exposure_nodata)
@@ -88,24 +88,26 @@ def process(raster_dir, exposure, outdir):
     # Save the depth-attenuated exposure raster
     exposure_profile.update(count=1)
 
-    out_file = os.path.join(outdir, f'depth_attenuated_exposure_{now}.tif')
+    out_file = os.path.join(outdir, f'rei_{region}_{version}.tif')
     with rasterio.open(out_file, 'w', **exposure_profile) as dst:
         dst.write(depth_attenuated_exposure, 1)
 
 
 def main():
     """ Add arguments and process data. """
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg D:\projects\REI-WaveExp\data\hg\v1.1\rei_20m_hg.tif D:\projects\REI-WaveExp\data\hg\v1.1
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\QCS\envlayers-20m-qcs D:\projects\REI-WaveExp\data\qcs\v1.1\rei_20m_qcs.tif D:\projects\REI-WaveExp\data\qcs\v1.1
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi D:\projects\REI-WaveExp\data\wcvi\v1.1\rei_20m_wcvi.tif D:\projects\REI-WaveExp\data\wcvi\v1.1
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea D:\projects\REI-WaveExp\data\sog\v1.1\rei_20m_sog.tif D:\projects\REI-WaveExp\data\sog\v1.1
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\NCC\envlayers-20m-ncc D:\projects\REI-WaveExp\data\ncc\v1.1\rei_20m_ncc.tif D:\projects\REI-WaveExp\data\ncc\v1.1
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg hg 2 D:\projects\REI-WaveExp\data\hg\v1.1\rei_20m_hg.tif D:\projects\REI-WaveExp\data\hg\v1.2
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\QCS\envlayers-20m-qcs qcs 2 D:\projects\REI-WaveExp\data\qcs\v1.1\rei_20m_qcs.tif D:\projects\REI-WaveExp\data\qcs\v1.2
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi wcvi 2 D:\projects\REI-WaveExp\data\wcvi\v1.1\rei_20m_wcvi.tif D:\projects\REI-WaveExp\data\wcvi\v1.2
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea sog 2 D:\projects\REI-WaveExp\data\sog\v1.1\rei_20m_sog.tif D:\projects\REI-WaveExp\data\sog\v1.2
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\NCC\envlayers-20m-ncc ncc 2 D:\projects\REI-WaveExp\data\ncc\v1.1\rei_20m_ncc.tif D:\projects\REI-WaveExp\data\ncc\v1.2
     parser = argparse.ArgumentParser(description='Apply exponential decay function to relative exposure index layer based in depth.')
     parser.add_argument('raster_dir', type=str, help='Absolute filepath to data directory with depth and slope raster (named bathymetry.tif and slope.tif).')
+    parser.add_argument('region', type=str, choices=['sog', 'qcs', 'ncc', 'wcvi', 'hg'], help='Choose a region: sog, qcs, ncc, wcvi, hg')
+    parser.add_argument('version', type=int, choices=[1, 2, 3, 4], help='Choose a version: 1, 2, 3, 4')
     parser.add_argument('exposure', type=str, help='Absolute filepath to input exposure raster.')
-    parser.add_argument('outdir', type=str, help='Output directory for depth-attenuated layer.')
+    parser.add_argument('outdir', type=str, help='Output directory for attenuated layer.')
     args = parser.parse_args()
-    process(args.raster_dir, args.exposure, args.outdir)
+    process(args.raster_dir, args.region, args.version, args.exposure, args.outdir)
 
 
 if __name__ == '__main__':
