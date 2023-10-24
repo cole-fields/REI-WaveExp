@@ -131,15 +131,15 @@ The project relies on the following tools and technologies:
 
 ![Wave Interpolated (m)](reference/wave-interpolated.png)
 
-![Haida Gwaii](reference/hg-4.png)
+![Haida Gwaii](reference/hg-1.4.png)
 
-![Salish Sea](reference/sog-4.png)
+![Salish Sea](reference/sog-1.4.png)
 
-![Queen Charlotte Strait](reference/qcs-4.png)
+![Queen Charlotte Strait](reference/qcs-1.4.png)
 
-![West Coast Vancouver Island](reference/wcvi-4.png)
+![West Coast Vancouver Island](reference/wcvi-1.4.png)
 
-![North Central Coast](reference/ncc-4.png)
+![North Central Coast](reference/ncc-1.4.png)
 
 * 2023-10-04: V1.1 (Regional wind rose plots)
 ![Salish Sea](reference/sog-wind-rose.png)
