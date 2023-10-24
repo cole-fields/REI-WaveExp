@@ -127,9 +127,9 @@ The project relies on the following tools and technologies:
 #### Updates:
 * 2023-10-24: V1.4 (Depth and wave height). A Coastal Environmental Exposure layer (https://open.canada.ca/data/en/dataset/e6405791-c9b9-4246-a5ed-e5cf610075b5) was downloaded and processed as part of V1.4. The line feature class (WaveHeight) represents mean maximum significant wave height over 25 years. The Generate Points from Line tool in ArcGIS was used to create points every 10 km along the lines within each region. These points were then interpolated using the Spline statistical interpolation tool for each region. The main reason for testing wave height was to address areas such as Haida Gwaii where higher wave energy is known, but not captured using only wind data.
 
-![Wave Height (m)](reference/wave-height.png)
+![Wave Height (m)](reference/wave-height-m.png)
 
-![Wave Interpolated (m)](reference/wave-interpolated.png)
+![Wave Interpolated (m)](reference/wave-interpolated-m.png)
 
 ![Haida Gwaii](reference/hg-1.4.png)
 
