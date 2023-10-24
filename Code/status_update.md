@@ -2,7 +2,9 @@
 
 **Project Repository:** https://github.com/cole-fields/REI-WaveExp/tree/hrdps
 
-**Date:** 2023-10-04
+**Date:** 2023-10-24
+
+~~**Date:** 2023-10-04~~
 
 ~~**Date:** 2023-09-13~~
 
@@ -30,6 +32,7 @@ This Project Status Update document provides a snapshot of the progress made in 
 The project's primary goal is to generate five regional spatial layers that provide a Relative Exposure Index (REI) to wind-driven waves along the coastal zone of Pacific Canada. The focus is on generating depth-attenuated Relative Exposure Index layers.
 
 #### Updates:
+* 2023-10-24: V1.4 of the data product was created using depth attenuation and including interpolated wave height data in the final calculation of REI values. A focal mean (circular 3 cell radius) was applied to the output of each region's REI layer. Next, they were normalized 0-1 between regions.
 * 2023-10-04: V1.1 of the data product was created using depth attenuation and including slope in the final calculation of REI values. A focal mean (circular 5 cell radius) was applied to the output of each region's REI layer. Next, they were normalized 0-1 between regions.
 
 ## 3. Objectives
@@ -44,6 +47,25 @@ The project's main objectives remain unchanged:
 - Document code on repository.
 
 #### Updates:
+* 2023-10-24: V1.4 changes include taking the log of the REI array prior to attenuation by depth. Within the attenuation function, the product of the log of the REI values and the depth attenuation factors are multiplied by interpolated wave height (m) values. By taking the log of the REI values, the orders of magnitude of difference between the regions is reduced, making the values more comparable.
+
+```
+def get_attenuation_factor(k_values, variable_array):
+    """ Return attenuation factor based on masked variable values (depth or wave height) and k array of values. """
+    return np.exp(-k_values * variable_array)
+
+
+def get_k_constant(rei_values):
+    """ Return constant k using acceleration of gravity constant and relative exposure index array. """
+    return (22**2)*((1/rei_values)**(2/3))*g**(1/3)
+
+
+def attenuate(data_array, depth_attenuation_factors, wave_array, nodata):
+    """ Return NumPy array that has the attenuation factor applied to its values and fill with NoData values. """
+    attenuated =  np.log(data_array) * depth_attenuation_factors * wave_array
+    return attenuated.filled(nodata)
+```
+
 * 2023-10-04: V1.1 is a modification of the formula below from DOI: 10.1080/01490410802053674. We also include slope in the calculations of REI values.
 
 ![Attenuation formula](reference/attenuation.png)
@@ -103,6 +125,22 @@ The project relies on the following tools and technologies:
 
 ### Relative Exposure Index Layers
 #### Updates:
+* 2023-10-24: V1.4 (Depth and wave height). A Coastal Environmental Exposure layer (https://open.canada.ca/data/en/dataset/e6405791-c9b9-4246-a5ed-e5cf610075b5) was downloaded and processed as part of V1.4. The line feature class (WaveHeight) represents mean maximum significant wave height over 25 years. The Generate Points from Line tool in ArcGIS was used to create points every 10 km along the lines within each region. These points were then interpolated using the Spline statistical interpolation tool for each region. The main reason for testing wave height was to address areas such as Haida Gwaii where higher wave energy is known, but not captured using only wind data.
+
+![Wave Height (m)](reference/wave-height.png)
+
+![Wave Interpolated (m)](reference/wave-interpolated.png)
+
+![Haida Gwaii](reference/hg-4.png)
+
+![Salish Sea](reference/sog-4.png)
+
+![Queen Charlotte Strait](reference/qcs-4.png)
+
+![West Coast Vancouver Island](reference/wcvi-4.png)
+
+![North Central Coast](reference/ncc-4.png)
+
 * 2023-10-04: V1.1 (Regional wind rose plots)
 ![Salish Sea](reference/sog-wind-rose.png)
 
