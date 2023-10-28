@@ -14,8 +14,10 @@ library(terra)
 
 # Read in interpolated wind data ----
 # pwd = getwd()
-data_dir <- file.path('F:/Projects/hrdps', 'ncc')
+fetch_dir <- 'E:/HRDPS2.5/results/hg'
+data_dir <- file.path('E:/HRDPS2.5/results/hg/', 'v1.1')
 tif_dir <- file.path(data_dir, 'spline_hrdps')
+outdir <- file.path(fetch_dir, 'v1.5')
 
 # Raster stack of wind frequency by direction
 wind_freq <- list.files(path = tif_dir,
@@ -34,14 +36,23 @@ wind_spd <- list.files(path=tif_dir,
 
 # Read in effective fetch data
 # fetch <- terra::vect(file.path(data_dir, 'fetch_barkeley.shp'))
-fetch_eff <- readRDS(file.path(data_dir, "fetch_effective.rds"))
+eff <- readRDS(file.path(fetch_dir, "fetch_effective.rds"))
+eff <- eff %>%
+  mutate(fetch_sum = map_dbl(data, ~ sum(.x$fetch_length_m)))
+
+
+eights <- lapply(eff$fetch_sum, function(x) {
+  tibble(fetch_m = rep(x/8, 8))
+})
+
+eff$fetch_eff <- purrr::map2(eff$fetch_eff, eights, ~dplyr::mutate(.x, fetch_m = .y$fetch_m))
 
 # Extract frequency and speed values for fetch locations
 
 freq_values <- terra::extract(x=wind_freq, 
-                              y=fetch_eff)
+                              y=eff)
 spd_values <- terra::extract(x=wind_spd, 
-                             y=fetch_eff)
+                             y=eff)
 wind_combine <- merge(freq_values, spd_values, by="ID")
 
 # Calculate Relative Exposure Index ----
@@ -56,22 +67,17 @@ expo_by_site <- wind_combine %>%
   mutate(., wind_dir_freq = map(wind_dir_freq, function(.data) {
     .data %>% 
       dplyr::arrange(., direction)
-  }),
-  fetch_eff = map(fetch_eff$fetch_eff, function(.data){
-    .data %>% 
-      dplyr::arrange(., direction)
   })) %>% 
-  mutate(REI = map2_dbl(wind_dir_freq, fetch_eff, # calculate relative exposure
-                        ~sum((.x$max_wind*.x$freq_total*.y$fetch), na.rm = T))) %>%  
-  dplyr::select(ID, REI) %>% # keep site, REI, and geometry
+  mutate(REI = map2_dbl(wind_dir_freq, eff$fetch_eff, # calculate relative exposure
+                        ~sum((.x$max_wind*.x$freq_total*.y$fetch_m), na.rm = T))) %>%  
+  dplyr::select(ID, REI) %>%
   rename(., site = ID) %>%
-  mutate(geometry = fetch_eff$geometry)
-
+  mutate(geometry = eff$geometry)
 # Save REI object
-saveRDS(expo_by_site, file.path(data_dir, 'REI.rds'))
+saveRDS(expo_by_site, file.path(outdir, 'REI.rds'))
 
 # Write to csv
 st_write(obj=expo_by_site,
-         dsn=file.path(data_dir, 'REI.csv'),
+         dsn=file.path(outdir, 'rei_origFetch.csv'),
          layer_options='GEOMETRY=AS_XY',
          append=FALSE)
