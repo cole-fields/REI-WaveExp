@@ -1,31 +1,3 @@
-#######################################################################
-########## Calculate effective fetch from raw fetch vectors ###########
-#######################################################################
-
-# Description: ----
-
-# This script takes fetch distances in 32 directions around grid points,
-# the output of Python fetch script, and calculates for each point:
-#
-# 1) Minimum fetch: the shortest fetch distance (proxy for distance to coast)
-# 2) Sum fetch: the same of all 32 fetch distances (proxy for wave exposure)
-# 3) Effective fetch: in 8 directions (N, NE, E, SE, S, SW, W, NW); 
-#    needed to calculate Relative Exposure Index (REI)*
-#
-# *For description of effective fetch and REI, see:
-#
-# Fonseca MS, Bell SS (1998) Influence of physical setting on seagrass
-#   landscapes near Beaufort, North Carolina, USA. Mar Ecol Prog Ser
-#   171:109-121
-
-# Requirements: ----
-
-# csv file(s) containing outputs of Python fetch script
-# i.e. fetch distance (metres) in 32 directions around grid points
-# One row per point
-
-# Load packages ----
-
 library(dplyr)
 library(purrr)
 library(tidyr)
@@ -39,10 +11,11 @@ library(vroom)
 weights <- cos(c(45,33.75,22.5,11.25,0,11.25,22.5,33.75,45) *(pi/180))
 
 # Path to project directory (string)
-pwd = getwd()
-data_dir <- file.path(dirname(pwd), 'Data/input/barkeley')
+data_dir <- file.path('D:/projects/REI-WaveExp/data', 'hg')
+output_dir <- file.path(data_dir, 'v1.5')
 
 # Source functions ----
+setwd('D:/projects/REI-WaveExp/code')
 source('roll_recycle_fun.R')
 
 # Coordinate reference system of fetch calculations (integer EPSG code)
@@ -74,22 +47,99 @@ fetch_summary <- map(fetch_csv, fread) %>%
 # Calculate minimum fetch (proxy for distance to coast) and sum fetch (proxy for wave exposure)
 
 fetch_proxies <- fetch_summary[, .(min_fetch = min(fetch_length_m),
-                                 sum_fetch = sum(fetch_length_m)),
-                             by = .(site_names,X,Y)]
+                                   sum_fetch = sum(fetch_length_m)),
+                               by = .(site_names,X,Y)]
 
-vroom_write(fetch_proxies, file.path(data_dir, "fetch_proxies.csv"), delim = ",")
+vroom_write(fetch_proxies, file.path(output_dir, "fetch_proxies.csv"), delim = ",")
 
 # Calculate effective fetch ----
-
 fetch_eff <- fetch_summary %>%
   dplyr::select(X, Y, direction, fetch_length_m) %>% 
   group_by(X, Y) %>% 
   nest() %>% 
   bind_cols(., site_names = as.character(seq_len(nrow(.)))) %>%   
   # Calculate effective fetch and place in tibble
-  mutate(fetch_eff = map(data, ~roll.recycle(.$fetch_length_m, 9, 8, by = 4)),
+  mutate(fetch_eff = map(data, ~roll.recycle(.$fetch_length_m, 9, 8, by = 9)),
          fetch_eff = map(fetch_eff, ~as.vector((weights %*% .)/sum(weights))),
          fetch_eff = map(fetch_eff, ~tibble(direction = c(360, seq(45, 315, 45)), fetch = .))) %>% 
   st_as_sf(coords = c("X","Y"), crs = crs_fetch)
 
-saveRDS(fetch_eff, file.path(data_dir, "fetch_effective.rds"))
+saveRDS(fetch_eff, file.path(output_dir, "fetch_effective.rds"))
+
+#######################################################################
+##########Environmental Data Layers for SG sdm#########################
+#######################################################################
+
+#### Load Packages ####
+
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(sf)
+library(terra)
+
+# Housekeeping ----
+
+# Read in interpolated wind data ----
+# pwd = getwd()
+data_dir <- file.path('D:/projects/REI-WaveExp/data/hg/v1.5')
+tif_dir <- file.path('E:/HRDPS2.5/results/hg/v1.1', 'spline_hrdps')
+
+# Raster stack of wind frequency by direction
+wind_freq <- list.files(path = tif_dir,
+                        pattern = "^freq.+tif$",
+                        full.names = T) %>% 
+  rast(.) 
+
+# Raster stack of average daily maximum wind speed by direction
+
+wind_spd <- list.files(path=tif_dir,
+                       pattern="^mx.+tif$",
+                       full.names=T) %>% 
+  rast(.)
+
+# Combine fetch data and wind data ----
+
+# Read in effective fetch data
+# fetch <- terra::vect(file.path(data_dir, 'fetch_barkeley.shp'))
+fetch_eff <- readRDS(file.path(data_dir, "fetch_effective.rds"))
+
+# Extract frequency and speed values for fetch locations
+
+freq_values <- terra::extract(x=wind_freq, 
+                              y=fetch_eff)
+spd_values <- terra::extract(x=wind_spd, 
+                             y=fetch_eff)
+wind_combine <- merge(freq_values, spd_values, by="ID")
+
+# Calculate Relative Exposure Index ----
+expo_by_site <- wind_combine %>%
+  rowwise() %>% 
+  mutate(freq_total = list(cbind(c_across(contains("freq")))),
+         max_wind = list(cbind(c_across(contains("mx")))),
+         wind_dir_freq = list(tibble(max_wind, 
+                                     freq_total, 
+                                     direction = c(135,180,225,270,315,360,45,90)))) %>%
+  ungroup() %>% 
+  mutate(., wind_dir_freq = map(wind_dir_freq, function(.data) {
+    .data %>% 
+      dplyr::arrange(., direction)
+  }),
+  fetch_eff = map(fetch_eff$fetch_eff, function(.data){
+    .data %>% 
+      dplyr::arrange(., direction)
+  })) %>% 
+  mutate(REI = map2_dbl(wind_dir_freq, fetch_eff, # calculate relative exposure
+                        ~sum((.x$max_wind*.x$freq_total*.y$fetch), na.rm = T))) %>%  
+  dplyr::select(ID, REI) %>% # keep site, REI, and geometry
+  rename(., site = ID) %>%
+  mutate(geometry = fetch_eff$geometry)
+
+# Save REI object
+saveRDS(expo_by_site, file.path(data_dir, 'REI.rds'))
+
+# Write to csv
+st_write(obj=expo_by_site,
+         dsn=file.path(data_dir, 'REI.csv'),
+         layer_options='GEOMETRY=AS_XY',
+         append=FALSE)
