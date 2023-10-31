@@ -90,11 +90,11 @@ def process(raster_dir, region, version, exposure, outdir):
 
 def main():
     """ Add arguments and process data. """
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg hg 5 D:\projects\REI-WaveExp\data\hg\v1.5\rei_20m_hg.tif D:\projects\REI-WaveExp\data\hg\v1.5
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\QCS\envlayers-20m-qcs qcs 5 D:\projects\REI-WaveExp\data\qcs\v1.1\rei_20m_qcs.tif D:\projects\REI-WaveExp\data\qcs\v1.5
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi wcvi 5 D:\projects\REI-WaveExp\data\wcvi\v1.1\rei_20m_wcvi.tif D:\projects\REI-WaveExp\data\wcvi\v1.5
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea sog 5 D:\projects\REI-WaveExp\data\sog\v1.1\rei_20m_sog.tif D:\projects\REI-WaveExp\data\sog\v1.5
-    # python attenuate.py D:\projects\sdm-layers\data\_20m\NCC\envlayers-20m-ncc ncc 5 D:\projects\REI-WaveExp\data\ncc\v1.1\rei_20m_ncc.tif D:\projects\REI-WaveExp\data\ncc\v1.5
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\HG\envlayers-20m-hg hg 5 D:\projects\REI-WaveExp\data\hg\v1.5\rei_20m_hg_focal.tif D:\projects\REI-WaveExp\data\hg\v1.5
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\QCS\envlayers-20m-qcs qcs 5 D:\projects\REI-WaveExp\data\qcs\v1.5\rei_20m_qcs_focal.tif D:\projects\REI-WaveExp\data\qcs\v1.5
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi wcvi 5 D:\projects\REI-WaveExp\data\wcvi\v1.5\rei_20m_wcvi_focal.tif D:\projects\REI-WaveExp\data\wcvi\v1.5
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea sog 5 D:\projects\REI-WaveExp\data\sog\v1.5\rei_20m_sog_focal.tif D:\projects\REI-WaveExp\data\sog\v1.5
+    # python attenuate.py D:\projects\sdm-layers\data\_20m\NCC\envlayers-20m-ncc ncc 5 D:\projects\REI-WaveExp\data\ncc\v1.5\rei_20m_ncc_focal.tif D:\projects\REI-WaveExp\data\ncc\v1.5
     parser = argparse.ArgumentParser(description='Apply exponential decay function to relative exposure index layer based in depth.')
     parser.add_argument('raster_dir', type=str, help='Absolute filepath to data directory with depth and wave raster (named bathymetry.tif and wave_height.tif).')
     parser.add_argument('region', type=str, choices=['sog', 'qcs', 'ncc', 'wcvi', 'hg'], help='Choose a region: sog, qcs, ncc, wcvi, hg')
