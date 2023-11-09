@@ -48,12 +48,14 @@ def mask_nodata(data, nodata):
 
 
 def get_attenuation_factor(k_values, variable_array):
-    """ Return attenuation factor based on masked variable values (depth or wave height) and k array of values. """
+    """ Return NumPy array of attenuation factors based on masked variable values (depth) and k array of values. """
     return np.exp(-k_values * variable_array)
 
 
 def get_k_constant(rei_values):
-    """ Return constant k using acceleration of gravity constant and relative exposure index array. """
+    """ Return NumPy array of k values using acceleration of gravity constant and relative exposure index array.
+         See https://www.tandfonline.com/doi/epdf/10.1080/01490410802053674?needAccess=true for formulas.
+    """
     return (22**2)*((1/rei_values)**(2/3))*g**(1/3)
 
 
@@ -95,8 +97,8 @@ def main():
     # python attenuate.py D:\projects\sdm-layers\data\_20m\WCVI\envlayers-20m-wcvi wcvi 5 D:\projects\REI-WaveExp\data\wcvi\v1.5\rei_20m_wcvi_focal.tif D:\projects\REI-WaveExp\data\wcvi\v1.5
     # python attenuate.py D:\projects\sdm-layers\data\_20m\SalishSea\envlayers-20m-shelfsalishsea sog 5 D:\projects\REI-WaveExp\data\sog\v1.5\rei_20m_sog_focal.tif D:\projects\REI-WaveExp\data\sog\v1.5
     # python attenuate.py D:\projects\sdm-layers\data\_20m\NCC\envlayers-20m-ncc ncc 5 D:\projects\REI-WaveExp\data\ncc\v1.5\rei_20m_ncc_focal.tif D:\projects\REI-WaveExp\data\ncc\v1.5
-    parser = argparse.ArgumentParser(description='Apply exponential decay function to relative exposure index layer based in depth.')
-    parser.add_argument('raster_dir', type=str, help='Absolute filepath to data directory with depth and wave raster (named bathymetry.tif and wave_height.tif).')
+    parser = argparse.ArgumentParser(description='Apply depth attenuation function to relative exposure index layer based in depth.')
+    parser.add_argument('raster_dir', type=str, help='Absolute filepath to data directory with depth raster (named bathymetry.tif).')
     parser.add_argument('region', type=str, choices=['sog', 'qcs', 'ncc', 'wcvi', 'hg'], help='Choose a region: sog, qcs, ncc, wcvi, hg')
     parser.add_argument('version', type=int, choices=[1, 2, 3, 4, 5], help='Choose a version: 1, 2, 3, 4, 5')
     parser.add_argument('exposure', type=str, help='Absolute filepath to input exposure raster.')
